@@ -111,35 +111,35 @@
                                 </v-row>
                                 <v-divider class="my-4"></v-divider>
                                 <v-list class="bg-transparent" lines="one">
-                                    <v-list-item prepend-icon="mdi-percent-outline">
-                                        <v-list-item-title>Customs Duty</v-list-item-title>
+                                    <v-list-item class="cost-item" prepend-icon="mdi-percent-outline">
+                                        <v-list-item-title class="mr-2">Customs Duty</v-list-item-title>
                                         <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.duty.toLocaleString('en-US', {
+                                            <span class="font-weight-medium ml-4">{{ results.duty.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</span>
                                         </template>
                                     </v-list-item>
-                                    <v-list-item prepend-icon="mdi-percent-outline">
-                                        <v-list-item-title>Excise Tax</v-list-item-title>
+                                    <v-list-item class="cost-item" prepend-icon="mdi-percent-outline">
+                                        <v-list-item-title class="mr-2">Excise Tax</v-list-item-title>
                                         <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.excise.toLocaleString('en-US', {
+                                            <span class="font-weight-medium ml-4">{{ results.excise.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</span>
                                         </template>
                                     </v-list-item>
-                                    <v-list-item prepend-icon="mdi-percent-outline">
-                                        <v-list-item-title>VAT (14%)</v-list-item-title>
+                                    <v-list-item class="cost-item" prepend-icon="mdi-percent-outline">
+                                        <v-list-item-title class="mr-2">VAT (14%)</v-list-item-title>
                                         <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.vat.toLocaleString('en-US', {
+                                            <span class="font-weight-medium ml-4">{{ results.vat.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</span>
                                         </template>
                                     </v-list-item>
                                     <v-divider class="my-2"></v-divider>
-                                    <v-list-item prepend-icon="mdi-cog-outline">
-                                        <v-list-item-title>Processing Fee</v-list-item-title>
+                                    <v-list-item class="cost-item" prepend-icon="mdi-cog-outline">
+                                        <v-list-item-title class="mr-2">Processing Fee</v-list-item-title>
                                         <template v-slot:append>
-                                            <span class="font-weight-medium">{{
+                                            <span class="font-weight-medium ml-4">{{
                                                 results.processingFee.toLocaleString('en-US', {
                                                     style: 'currency', currency: 'GYD'
                                                 }) }}</span>
@@ -484,5 +484,17 @@ useHead({
     font-size: clamp(1rem, 5vw, 2.5rem);
     white-space: nowrap;
     overflow: hidden;
+}
+
+.cost-item {
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .cost-item .v-list-item__prepend {
+        display: none;
+    }
 }
 </style>
