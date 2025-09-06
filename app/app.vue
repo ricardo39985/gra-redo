@@ -48,21 +48,12 @@
                                 <v-select v-if="isPlateApplicable" v-model="plate" :items="plateItems"
                                     label="Plate Type" variant="outlined"></v-select>
 
-                                <v-select v-if="fuel === 'Diesel'" v-model="cc"
-                                    :items="[{ title: 'Under 1500cc', value: 'under1500' }, { title: '1501cc - 2000cc', value: '2000' }, { title: '2001cc - 2500cc', value: '2500' }, { title: '2501cc - 3000cc', value: '3000' }, { title: 'Over 3000cc', value: '4000' }]"
-                                    label="Engine Capacity (CC)" variant="outlined"></v-select>
-
-                                <v-select v-if="vehicle_type === 'Bike' && fuel !== 'Electric'" v-model="cc"
-                                    :items="[{ title: 'Under 175cc', value: 'under175' }, { title: 'Over 175cc', value: 'over175' }]"
-                                    label="Engine Capacity (CC)" variant="outlined"></v-select>
-
-                                <v-select v-if="fuel === 'Gasoline' && vehicle_type !== 'Bike'" v-model="cc"
-                                    :items="[{ title: '0cc - 1000cc', value: '1000' }, { title: '1001cc - 1500cc', value: '1500' }, { title: '1501cc - 1800cc', value: '1800' }, { title: '1801cc - 2000cc', value: '2000' }, { title: '2001cc - 3000cc', value: '3000' }, { title: 'Over 3000cc', value: '4000' }]"
-                                    label="Engine Capacity (CC)" variant="outlined"></v-select>
-
                                 <v-text-field v-if="fuel === 'Electric'" v-model.number="cc"
                                     label="Engine Capacity (KW)" type="number" placeholder="Enter KW"
                                     variant="outlined"></v-text-field>
+
+                                <v-text-field v-else v-model.number="cc" label="Engine Capacity (CC)" type="number"
+                                    placeholder="Enter CC" variant="outlined"></v-text-field>
 
                                 <v-text-field v-model.number="cif" label="CIF Value (USD)" type="number" prefix="$"
                                     variant="outlined"></v-text-field>
@@ -81,19 +72,45 @@
                             </v-card-actions>
                         </v-card>
 
-                        <v-card v-if="results" class="mt-8 pa-2" variant="tonal" color="primary" rounded="xl">
+                        <v-card v-if="results" class="mt-8 pa-6 results-card" variant="tonal" color="primary"
+                            rounded="xl">
                             <v-card-title class="font-weight-bold text-center text-h5">Calculation
                                 Results</v-card-title>
                             <v-card-text>
+                                <v-row class="mb-4" justify="center">
+                                    <v-col cols="12" md="4">
+                                        <v-sheet class="stat-card text-center" rounded="lg">
+                                            <div class="stat-title">CIF Value</div>
+                                            <div class="stat-value" ref="cifRef"
+                                                :title="results.cifValue.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                {{ results.cifValue.toLocaleString('en-US', {
+                                                    style: 'currency', currency: 'GYD'
+                                                }) }}</div>
+                                        </v-sheet>
+                                    </v-col>
+                                    <v-col cols="12" md="4">
+                                        <v-sheet class="stat-card text-center" rounded="lg">
+                                            <div class="stat-title">Total Tax</div>
+                                            <div class="stat-value" ref="taxRef"
+                                                :title="results.totalTax.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                {{ results.totalTax.toLocaleString('en-US', {
+                                                    style: 'currency', currency: 'GYD'
+                                                }) }}</div>
+                                        </v-sheet>
+                                    </v-col>
+                                    <v-col cols="12" md="4">
+                                        <v-sheet class="stat-card text-center" rounded="lg">
+                                            <div class="stat-title">Total Cost</div>
+                                            <div class="stat-value" ref="totalRef"
+                                                :title="results.totalPrice.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                {{ results.totalPrice.toLocaleString('en-US', {
+                                                    style: 'currency', currency: 'GYD'
+                                                }) }}</div>
+                                        </v-sheet>
+                                    </v-col>
+                                </v-row>
+                                <v-divider class="my-4"></v-divider>
                                 <v-list class="bg-transparent" lines="one">
-                                    <v-list-item prepend-icon="mdi-receipt-text-outline">
-                                        <v-list-item-title>CIF Value</v-list-item-title>
-                                        <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.cifValue.toLocaleString('en-US',
-                                                { style: 'currency', currency: 'GYD' }) }}</span>
-                                        </template>
-                                    </v-list-item>
-                                    <v-divider class="my-2"></v-divider>
                                     <v-list-item prepend-icon="mdi-percent-outline">
                                         <v-list-item-title>Customs Duty</v-list-item-title>
                                         <template v-slot:append>
@@ -105,8 +122,9 @@
                                     <v-list-item prepend-icon="mdi-percent-outline">
                                         <v-list-item-title>Excise Tax</v-list-item-title>
                                         <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.excise.toLocaleString('en-US',
-                                                { style: 'currency', currency: 'GYD' }) }}</span>
+                                            <span class="font-weight-medium">{{ results.excise.toLocaleString('en-US', {
+                                                style: 'currency', currency: 'GYD'
+                                            }) }}</span>
                                         </template>
                                     </v-list-item>
                                     <v-list-item prepend-icon="mdi-percent-outline">
@@ -117,18 +135,17 @@
                                             }) }}</span>
                                         </template>
                                     </v-list-item>
+                                    <v-divider class="my-2"></v-divider>
+                                    <v-list-item prepend-icon="mdi-cog-outline">
+                                        <v-list-item-title>Processing Fee</v-list-item-title>
+                                        <template v-slot:append>
+                                            <span class="font-weight-medium">{{
+                                                results.processingFee.toLocaleString('en-US', {
+                                                    style: 'currency', currency: 'GYD'
+                                                }) }}</span>
+                                        </template>
+                                    </v-list-item>
                                 </v-list>
-                                <div class="d-flex justify-space-between align-center my-4 pa-4">
-                                    <span class="text-h6 font-weight-bold">Total Tax Payable</span>
-                                    <span class="text-h6 font-weight-bold">{{ results.totalTax.toLocaleString('en-US', {
-                                        style: 'currency', currency: 'GYD'
-                                    }) }}</span>
-                                </div>
-                                <div class="d-flex justify-space-between align-center pa-4 bg-primary rounded-lg">
-                                    <span class="text-h5 font-weight-bold">Final Cost</span>
-                                    <span class="text-h5 font-weight-bold">{{ results.totalPrice.toLocaleString('en-US',
-                                        { style: 'currency', currency: 'GYD' }) }}</span>
-                                </div>
                             </v-card-text>
                         </v-card>
 
@@ -155,7 +172,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
 
 // Theme toggling
@@ -177,6 +194,46 @@ const plate = ref('P')
 const error = ref(null)
 const results = ref(null)
 const processingFee = 0 // GYD processing fee
+
+const cifRef = ref(null)
+const taxRef = ref(null)
+const totalRef = ref(null)
+
+function fitText(el) {
+    if (!el || !el.parentElement) return
+
+    // Reset to stylesheet value to get a baseline
+    el.style.fontSize = ''
+
+    const parent = el.parentElement
+    const parentStyle = window.getComputedStyle(parent)
+    const availableWidth = parent.clientWidth - parseFloat(parentStyle.paddingLeft) - parseFloat(parentStyle.paddingRight)
+
+    // Only resize if the text is actually overflowing
+    if (el.scrollWidth > availableWidth) {
+        const currentFontSize = parseFloat(window.getComputedStyle(el).fontSize)
+        // Calculate the new font size based on the ratio of available width to text width.
+        const newFontSize = Math.floor(currentFontSize * (availableWidth / el.scrollWidth))
+        const minFontSize = 10 // px
+        el.style.fontSize = Math.max(newFontSize, minFontSize) + 'px'
+    }
+}
+
+function updateStatSizes() {
+    ;[cifRef.value, taxRef.value, totalRef.value].forEach(fitText)
+}
+
+watch(results, () => {
+    nextTick(updateStatSizes)
+})
+
+onMounted(() => {
+    window.addEventListener('resize', updateStatSizes)
+})
+
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', updateStatSizes)
+})
 
 const ageCategory = computed(() => {
     if (!vehicleYear.value) return null;
@@ -408,5 +465,24 @@ useHead({
 
 .results-card {
     background: linear-gradient(to right, rgba(var(--v-theme-primary), 0.1), rgba(var(--v-theme-secondary), 0.1)) !important;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
+    color: #fff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+}
+
+.stat-title {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.stat-value {
+    font-weight: 700;
+    font-size: clamp(1rem, 5vw, 2.5rem);
+    white-space: nowrap;
+    overflow: hidden;
 }
 </style>
