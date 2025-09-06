@@ -10,6 +10,23 @@
             </v-btn>
         </v-app-bar>
 
+        <v-dialog v-model="showDisclaimer" persistent max-width="500">
+            <v-card>
+                <v-card-title class="text-h6">Disclaimer</v-card-title>
+                <v-card-text>
+                    <p class="mb-4">
+                        This calculator is not affiliated with or endorsed by the Guyana Revenue
+                        Authority (GRA). Estimates are for guidance only.
+                    </p>
+                    <v-checkbox v-model="disclaimerChecked" label="I understand and agree"></v-checkbox>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" :disabled="!disclaimerChecked" @click="acceptDisclaimer">Continue</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <v-main>
             <v-container>
                 <v-row justify="center">
@@ -240,6 +257,14 @@ function toggleTheme() {
     theme.global.name.value = isDark.value ? 'light' : 'dark';
 }
 
+// Disclaimer dialog
+const showDisclaimer = ref(false)
+const disclaimerChecked = ref(false)
+function acceptDisclaimer() {
+    localStorage.setItem('disclaimerAccepted', 'true')
+    showDisclaimer.value = false
+}
+
 // Form state
 const cif = ref(null)
 const exchange_rate = ref(215) // Set a default exchange rate
@@ -450,7 +475,15 @@ async function generateEstimatePdf(download = false) {
     if (download) {
         const link = document.createElement('a')
         link.href = pdfPreviewUrl.value
-        link.download = 'estimate.pdf'
+        const dateStr = new Date().toISOString().slice(0, 10)
+        const namePart = [estimateInfo.customerFirstName, estimateInfo.customerLastName]
+            .filter(Boolean)
+            .join('_')
+            .replace(/\s+/g, '_')
+        const fileName = namePart
+            ? `${namePart}_${dateStr}.pdf`
+            : `estimate_${Math.random().toString(36).slice(2, 8)}_${dateStr}.pdf`
+        link.download = fileName
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -531,6 +564,9 @@ onMounted(() => {
         cc.value = parsed.cc ?? cc.value
         cif.value = parsed.cif ?? cif.value
         exchange_rate.value = parsed.exchange_rate ?? exchange_rate.value
+    }
+    if (!localStorage.getItem('disclaimerAccepted')) {
+        showDisclaimer.value = true
     }
 })
 
