@@ -10,6 +10,23 @@
             </v-btn>
         </v-app-bar>
 
+        <v-dialog v-model="showDisclaimer" persistent max-width="500">
+            <v-card>
+                <v-card-title class="text-h6">Disclaimer</v-card-title>
+                <v-card-text>
+                    <p class="mb-4">
+                        This calculator is not affiliated with or endorsed by the Guyana Revenue
+                        Authority (GRA). Estimates are for guidance only.
+                    </p>
+                    <v-checkbox v-model="disclaimerChecked" label="I understand and agree"></v-checkbox>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" :disabled="!disclaimerChecked" @click="acceptDisclaimer">Continue</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
         <v-main>
             <v-container>
                 <v-row justify="center">
@@ -72,10 +89,17 @@
                             </v-card-actions>
                         </v-card>
 
-                        <v-card v-if="results" class="mt-8 pa-0 results-card" variant="tonal" color="primary"
-                            rounded="xl">
-                            <v-card-title class="font-weight-bold text-center text-h5">Calculation
-                                Results</v-card-title>
+                        <div v-if="results" class="mt-8">
+                            <v-tabs v-model="activeTab" grow>
+                                <v-tab value="results">Results</v-tab>
+                                <v-tab value="estimate">Print Estimate</v-tab>
+                            </v-tabs>
+                            <v-window v-model="activeTab" class="mt-4">
+                                <v-window-item value="results">
+                                    <v-card class="pa-0 results-card" variant="tonal" color="primary"
+                                        rounded="xl">
+                                        <v-card-title class="font-weight-bold text-center text-h5">Calculation
+                                            Results</v-card-title>
                             <v-card-text>
                                 <v-row class="mb-4" justify="center">
                                     <v-col cols="12" md="4">
@@ -146,10 +170,60 @@
                                         </template>
                                     </v-list-item>
                                 </v-list>
-                            </v-card-text>
-                        </v-card>
+                        </v-card-text>
+                          </v-card>
+                        </v-window-item>
+                        <v-window-item value="estimate">
+                          <v-card class="pa-4" rounded="xl">
+                            <v-row dense>
+                              <v-col cols="12" md="5">
+                                <v-form>
+                                  <v-card class="mb-6" variant="tonal" rounded="lg">
+                                    <v-card-title class="text-subtitle-1 font-weight-bold">Vehicle Details</v-card-title>
+                                    <v-card-text>
+                                      <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.vehicleMake" label="Make" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.vehicleModel" label="Model" variant="outlined"></v-text-field>
+                                    </v-card-text>
+                                  </v-card>
+                                  <v-card class="mb-6" variant="tonal" rounded="lg">
+                                    <v-card-title class="text-subtitle-1 font-weight-bold">Customer Details</v-card-title>
+                                    <v-card-text>
+                                      <v-text-field v-model="estimateInfo.customerFirstName" label="First Name" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.customerLastName" label="Last Name" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel" variant="outlined"></v-text-field>
+                                    </v-card-text>
+                                  </v-card>
+                                  <v-card variant="tonal" rounded="lg">
+                                    <v-card-title class="text-subtitle-1 font-weight-bold">Company Details</v-card-title>
+                                    <v-card-text>
+                                      <v-text-field v-model="estimateInfo.companyName" label="Name" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.companyAddress" label="Address" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.companyPhone" label="Phone" variant="outlined"></v-text-field>
+                                      <v-file-input label="Logo" accept="image/*" @change="onLogoChange" variant="outlined"></v-file-input>
+                                      <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-2" max-height="100" contain></v-img>
+                                    </v-card-text>
+                                  </v-card>
+                                </v-form>
+                              </v-col>
+                              <v-col cols="12" md="7" class="d-flex flex-column">
+                                <v-sheet class="flex-grow-1 d-flex" rounded="xl" color="surface" style="min-height:600px;">
+                                  <iframe v-if="pdfPreviewUrl" :src="pdfPreviewSrc" class="flex-grow-1 rounded-xl" style="border: none;" height="100%"></iframe>
+                                  <div v-else class="d-flex align-center justify-center flex-grow-1 text-medium-emphasis">Preview will appear here</div>
+                                </v-sheet>
+                                <div class="text-center mt-4">
+                                  <v-btn size="large" color="primary" prepend-icon="mdi-download" class="w-100" @click="downloadEstimatePdf" :disabled="!pdfPreviewUrl">Download PDF</v-btn>
+                                </div>
+                              </v-col>
+                            </v-row>
+                          </v-card>
+                        </v-window-item>
+                      </v-window>
+                    </div>
 
-                        <footer class="text-center text-caption text-medium-emphasis py-8">
+                          <footer class="text-center text-caption text-medium-emphasis py-8">
                             <p>
                                 This calculator is not affiliated with or endorsed by the
                                 <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
@@ -172,14 +246,23 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 
 // Theme toggling
 const theme = useTheme()
 const isDark = computed(() => theme.global.current.value.dark)
 function toggleTheme() {
     theme.global.name.value = isDark.value ? 'light' : 'dark';
+}
+
+// Disclaimer dialog
+const showDisclaimer = ref(false)
+const disclaimerChecked = ref(false)
+function acceptDisclaimer() {
+    localStorage.setItem('disclaimerAccepted', 'true')
+    showDisclaimer.value = false
 }
 
 // Form state
@@ -198,6 +281,218 @@ const processingFee = 0 // GYD processing fee
 const cifRef = ref(null)
 const taxRef = ref(null)
 const totalRef = ref(null)
+const activeTab = ref('results')
+const pdfPreviewUrl = ref('')
+const pdfPreviewSrc = computed(() =>
+    pdfPreviewUrl.value
+        ? `${pdfPreviewUrl.value}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`
+        : ''
+)
+const estimateInfo = reactive({
+    vehicleYear: '',
+    vehicleMake: '',
+    vehicleModel: '',
+    customerFirstName: '',
+    customerLastName: '',
+    customerEmail: '',
+    customerPhone: '',
+    companyName: '',
+    companyAddress: '',
+    companyEmail: '',
+    companyPhone: '',
+    companyLogo: ''
+})
+
+function formatCurrency(val) {
+    return Number(val).toLocaleString('en-US', { style: 'currency', currency: 'GYD' })
+}
+
+
+function onLogoChange(e) {
+    const file = e?.target?.files?.[0] || (Array.isArray(e) ? e[0] : e)
+    if (!file) {
+        estimateInfo.companyLogo = ''
+        return
+    }
+    const reader = new FileReader()
+    reader.onload = evt => {
+        estimateInfo.companyLogo = evt.target.result
+        if (results.value) generateEstimatePdf(false)
+    }
+    reader.readAsDataURL(file)
+}
+
+async function generateEstimatePdf(download = false) {
+    if (!results.value) return
+    const pdfDoc = await PDFDocument.create()
+    const page = pdfDoc.addPage([595.28, 841.89])
+    const { width, height } = page.getSize()
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    const drawText = (text, x, y, size = 12, options = {}) => {
+        const { align = 'left', font: f = font, color = rgb(0, 0, 0) } = options
+        const textWidth = f.widthOfTextAtSize(text, size)
+        let drawX = x
+        if (align === 'center') drawX = x - textWidth / 2
+        if (align === 'right') drawX = x - textWidth
+        page.drawText(text, { x: drawX, y, size, font: f, color })
+    }
+    const wrapText = (text, maxWidth, size) => {
+        const words = text.split(' ')
+        const lines = []
+        let line = ''
+        words.forEach(word => {
+            const test = line ? `${line} ${word}` : word
+            const width = font.widthOfTextAtSize(test, size)
+            if (width > maxWidth && line) {
+                lines.push(line)
+                line = word
+            } else {
+                line = test
+            }
+        })
+        if (line) lines.push(line)
+        return lines
+    }
+    const margin = 40
+    let y = height - margin
+
+    if (estimateInfo.companyLogo) {
+        try {
+            const base64 = estimateInfo.companyLogo.split(',')[1]
+            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+            const img = estimateInfo.companyLogo.includes('image/png')
+                ? await pdfDoc.embedPng(bytes)
+                : await pdfDoc.embedJpg(bytes)
+            page.drawImage(img, { x: margin, y: y - 60, width: 60, height: 60 })
+        } catch (e) { }
+    }
+
+    let infoX = estimateInfo.companyLogo ? margin + 70 : margin
+    let infoY = y - 15
+    if (estimateInfo.companyName) { drawText(estimateInfo.companyName, infoX, infoY, 12, { font: fontBold }); infoY -= 14 }
+    if (estimateInfo.companyAddress) { drawText(estimateInfo.companyAddress, infoX, infoY); infoY -= 14 }
+    if (estimateInfo.companyEmail) { drawText(estimateInfo.companyEmail, infoX, infoY); infoY -= 14 }
+    if (estimateInfo.companyPhone) { drawText(estimateInfo.companyPhone, infoX, infoY); infoY -= 14 }
+
+    drawText(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, width - margin, y - 15, 12, { align: 'right' })
+
+    y -= 80
+    drawText('Motor Vehicle Tax Estimate', width / 2, y, 18, { align: 'center', font: fontBold })
+
+    y -= 30
+    const hasCustomerInfo = estimateInfo.customerFirstName || estimateInfo.customerLastName || estimateInfo.customerEmail || estimateInfo.customerPhone
+    if (hasCustomerInfo) {
+        drawText('Customer Details', margin, y, 14, { font: fontBold })
+        y -= 18
+        const name = [estimateInfo.customerFirstName, estimateInfo.customerLastName].filter(Boolean).join(' ')
+        if (name) { drawText(`Name: ${name}`, margin, y); y -= 16 }
+        if (estimateInfo.customerEmail) { drawText(`Email: ${estimateInfo.customerEmail}`, margin, y); y -= 16 }
+        if (estimateInfo.customerPhone) { drawText(`Phone: ${estimateInfo.customerPhone}`, margin, y); y -= 16 }
+        y -= 10
+    }
+
+    drawText('Vehicle Details', margin, y, 14, { font: fontBold })
+    y -= 18
+    const vehicleItems = [
+        ['Vehicle Type:', vehicle_type.value],
+        ['Vehicle Year:', estimateInfo.vehicleYear || ''],
+        ['Vehicle Make:', estimateInfo.vehicleMake || ''],
+        ['Vehicle Model:', estimateInfo.vehicleModel || ''],
+        ['Engine Capacity:', cc.value ? `${cc.value} ${fuel.value === 'Electric' ? 'KW' : 'CC'}` : ''],
+        ['CIF Value:', formatCurrency(results.value.cifValue)],
+        ['Exchange Rate:', exchange_rate.value ? exchange_rate.value.toLocaleString('en-US', { style: 'currency', currency: 'GYD' }) : '']
+    ]
+    vehicleItems.forEach(item => {
+        if (item[1]) {
+            drawText(item[0], margin, y)
+            drawText(item[1], width - margin, y, 12, { align: 'right' })
+            page.drawLine({
+                start: { x: margin, y: y - 4 },
+                end: { x: width - margin, y: y - 4 },
+                color: rgb(0.8, 0.8, 0.8),
+                dashArray: [3]
+            })
+            y -= 20
+        }
+    })
+
+    drawText('Values shown in GYD.', width - margin, y, 10, { align: 'right', color: rgb(0.4, 0.4, 0.4) })
+
+    y -= 30
+    const glanceHeight = 60
+    const boxWidth = (width - margin * 2 - 20) / 3
+    const boxY = y - glanceHeight
+    const glanceData = [
+        { label: 'CIF', value: formatCurrency(results.value.cifValue), color: rgb(0.25, 0.5, 0.95) },
+        { label: 'Taxes', value: formatCurrency(results.value.totalTax), color: rgb(0.85, 0.2, 0.2) },
+        { label: 'Total', value: formatCurrency(results.value.totalPrice), color: rgb(0.0, 0.5, 0.3) }
+    ]
+    glanceData.forEach((g, i) => {
+        const x = margin + i * (boxWidth + 10)
+        page.drawRectangle({ x, y: boxY, width: boxWidth, height: glanceHeight, color: rgb(0.95, 0.95, 0.95), borderColor: g.color, borderWidth: 1 })
+        drawText(g.label, x + boxWidth / 2, boxY + glanceHeight - 18, 12, { align: 'center', font: fontBold, color: g.color })
+        drawText(g.value, x + boxWidth / 2, boxY + 20, 14, { align: 'center', font: fontBold, color: g.color })
+    })
+
+    y = boxY - 40
+    drawText('Taxes & Costs', margin, y, 14, { font: fontBold })
+    y -= 18
+    const costItems = [
+        ['CIF Value:', formatCurrency(results.value.cifValue)],
+        ['Customs Duty:', formatCurrency(results.value.duty)],
+        ['Excise Tax:', formatCurrency(results.value.excise)],
+        ['VAT:', formatCurrency(results.value.vat)],
+        ['Processing Fee:', formatCurrency(results.value.processingFee)],
+        ['Total Tax Payable:', formatCurrency(results.value.totalTax)],
+        ['Final Cost:', formatCurrency(results.value.totalPrice)]
+    ]
+    costItems.forEach((item, idx) => {
+        let f = idx >= 5 ? fontBold : font
+        let color = idx === 6 ? rgb(0.0, 0.5, 0.3) : rgb(0, 0, 0)
+        drawText(item[0], margin, y, 12, { font: f, color })
+        drawText(item[1], width - margin, y, 12, { align: 'right', font: f, color })
+        page.drawLine({
+            start: { x: margin, y: y - 4 },
+            end: { x: width - margin, y: y - 4 },
+            color: rgb(0.8, 0.8, 0.8),
+            dashArray: [3]
+        })
+        y -= 20
+    })
+
+    const disclaimer = 'This estimate is for guidance only. Taxes are computed as customs duty, excise, VAT and a $1,000 processing fee applied to your CIF value.'
+    const disclaimerLines = wrapText(disclaimer, width - margin * 2, 10)
+    let disclaimerY = margin + (disclaimerLines.length - 1) * 12
+    disclaimerLines.forEach((line, i) => {
+        drawText(line, width / 2, disclaimerY - i * 12, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) })
+    })
+    const pdfBytes = await pdfDoc.save()
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+    const oldUrl = pdfPreviewUrl.value
+    pdfPreviewUrl.value = URL.createObjectURL(blob)
+    if (oldUrl) URL.revokeObjectURL(oldUrl)
+    if (download) {
+        const link = document.createElement('a')
+        link.href = pdfPreviewUrl.value
+        const dateStr = new Date().toISOString().slice(0, 10)
+        const namePart = [estimateInfo.customerFirstName, estimateInfo.customerLastName]
+            .filter(Boolean)
+            .join('_')
+            .replace(/\s+/g, '_')
+        const fileName = namePart
+            ? `${namePart}_${dateStr}.pdf`
+            : `estimate_${Math.random().toString(36).slice(2, 8)}_${dateStr}.pdf`
+        link.download = fileName
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+}
+
+function downloadEstimatePdf() {
+    generateEstimatePdf(true)
+}
 
 function fitText(el) {
     if (!el || !el.parentElement) return
@@ -224,15 +519,60 @@ function updateStatSizes() {
 }
 
 watch(results, () => {
-    nextTick(updateStatSizes)
+    nextTick(() => {
+        updateStatSizes()
+        if (results.value) generateEstimatePdf(false)
+    })
+})
+
+watch(estimateInfo, () => {
+    localStorage.setItem('estimateInfo', JSON.stringify(estimateInfo))
+    if (results.value) generateEstimatePdf(false)
+}, { deep: true })
+
+watch(activeTab, val => {
+    if (val === 'estimate') {
+        estimateInfo.vehicleYear = vehicleYear.value ? String(vehicleYear.value) : estimateInfo.vehicleYear
+        if (results.value) generateEstimatePdf(false)
+    }
+})
+
+watch([fuel, vehicle_type, vehicleYear, plate, cc, cif, exchange_rate], () => {
+    const data = {
+        fuel: fuel.value,
+        vehicle_type: vehicle_type.value,
+        vehicleYear: vehicleYear.value,
+        plate: plate.value,
+        cc: cc.value,
+        cif: cif.value,
+        exchange_rate: exchange_rate.value
+    }
+    localStorage.setItem('calcInputs', JSON.stringify(data))
 })
 
 onMounted(() => {
     window.addEventListener('resize', updateStatSizes)
+    const savedEstimate = localStorage.getItem('estimateInfo')
+    if (savedEstimate) Object.assign(estimateInfo, JSON.parse(savedEstimate))
+    const savedCalc = localStorage.getItem('calcInputs')
+    if (savedCalc) {
+        const parsed = JSON.parse(savedCalc)
+        fuel.value = parsed.fuel ?? fuel.value
+        vehicle_type.value = parsed.vehicle_type ?? vehicle_type.value
+        vehicleYear.value = parsed.vehicleYear ?? vehicleYear.value
+        plate.value = parsed.plate ?? plate.value
+        cc.value = parsed.cc ?? cc.value
+        cif.value = parsed.cif ?? cif.value
+        exchange_rate.value = parsed.exchange_rate ?? exchange_rate.value
+    }
+    if (!localStorage.getItem('disclaimerAccepted')) {
+        showDisclaimer.value = true
+    }
 })
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', updateStatSizes)
+    if (pdfPreviewUrl.value) URL.revokeObjectURL(pdfPreviewUrl.value)
 })
 
 const ageCategory = computed(() => {
