@@ -111,6 +111,31 @@
                                 </v-row>
                                 <v-divider class="my-4"></v-divider>
                                 <v-list class="bg-transparent" lines="one">
+                                    <v-list-item class="cost-item" prepend-icon="mdi-cash-multiple">
+                                        <v-list-item-title class="mr-2">CIF Value</v-list-item-title>
+                                        <template v-slot:append>
+                                            <span class="font-weight-medium ml-4">{{ results.cifValue.toLocaleString('en-US', {
+                                                style: 'currency', currency: 'GYD'
+                                            }) }}</span>
+                                        </template>
+                                    </v-list-item>
+                                    <v-list-item class="cost-item" prepend-icon="mdi-calculator">
+                                        <v-list-item-title class="mr-2">Total Tax</v-list-item-title>
+                                        <template v-slot:append>
+                                            <span class="font-weight-medium ml-4">{{ results.totalTax.toLocaleString('en-US', {
+                                                style: 'currency', currency: 'GYD'
+                                            }) }}</span>
+                                        </template>
+                                    </v-list-item>
+                                    <v-list-item class="cost-item" prepend-icon="mdi-cash">
+                                        <v-list-item-title class="mr-2">Total Cost</v-list-item-title>
+                                        <template v-slot:append>
+                                            <span class="font-weight-medium ml-4">{{ results.totalPrice.toLocaleString('en-US', {
+                                                style: 'currency', currency: 'GYD'
+                                            }) }}</span>
+                                        </template>
+                                    </v-list-item>
+                                    <v-divider class="my-2"></v-divider>
                                     <v-list-item class="cost-item" prepend-icon="mdi-percent-outline">
                                         <v-list-item-title class="mr-2">Customs Duty</v-list-item-title>
                                         <template v-slot:append>
@@ -489,10 +514,14 @@ useHead({
 .cost-item {
     justify-content: space-between;
     padding: 0.5rem 0;
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 @media (max-width: 600px) {
+    .cost-item {
+        padding: 0.25rem 0;
+        gap: 0.25rem;
+    }
     .cost-item .v-list-item__prepend {
         display: none;
     }
