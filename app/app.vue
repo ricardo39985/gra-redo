@@ -207,7 +207,7 @@
 <script setup>
 import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
-import { jsPDF } from 'jspdf'
+import { PDFDocument, StandardFonts } from 'pdf-lib'
 
 // Theme toggling
 const theme = useTheme()
@@ -268,49 +268,66 @@ function onLogoChange(e) {
     reader.readAsDataURL(file)
 }
 
-function generateEstimatePdf() {
+async function generateEstimatePdf() {
     if (!results.value) return
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' })
-    const pageWidth = doc.internal.pageSize.getWidth()
-    let y = 40
+    const pdfDoc = await PDFDocument.create()
+    const page = pdfDoc.addPage([595.28, 841.89])
+    const { width, height } = page.getSize()
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    const drawText = (text, x, y, size = 12, align = 'left') => {
+        const textWidth = font.widthOfTextAtSize(text, size)
+        let drawX = x
+        if (align === 'center') drawX = x - textWidth / 2
+        if (align === 'right') drawX = x - textWidth
+        page.drawText(text, { x: drawX, y, size, font })
+    }
+    let y = height - 40
     if (estimateInfo.companyLogo) {
-        const format = estimateInfo.companyLogo.startsWith('data:image/png') ? 'PNG' : 'JPEG'
-        try { doc.addImage(estimateInfo.companyLogo, format, 40, y, 60, 60) } catch (e) { }
+        try {
+            const imgBytes = await fetch(estimateInfo.companyLogo).then(r => r.arrayBuffer())
+            const img = estimateInfo.companyLogo.startsWith('data:image/png')
+                ? await pdfDoc.embedPng(imgBytes)
+                : await pdfDoc.embedJpg(imgBytes)
+            page.drawImage(img, { x: 40, y: y - 60, width: 60, height: 60 })
+        } catch (e) { }
     }
     let textX = estimateInfo.companyLogo ? 110 : 40
-    doc.setFontSize(12)
-    let ty = y + 15
-    if (estimateInfo.companyName) { doc.text(estimateInfo.companyName, textX, ty); ty += 15 }
-    if (estimateInfo.companyAddress) { doc.text(estimateInfo.companyAddress, textX, ty); ty += 15 }
-    if (estimateInfo.companyPhone) { doc.text(estimateInfo.companyPhone, textX, ty); ty += 15 }
-    doc.text(new Date().toLocaleDateString(), pageWidth - 40, 40, { align: 'right' })
-    y = 120
-    doc.setFontSize(18)
-    doc.text('Motor Vehicle Tax Estimate', pageWidth / 2, y, { align: 'center' })
-    y += 30
-    doc.setFontSize(12)
+    let ty = y - 15
+    if (estimateInfo.companyName) { drawText(estimateInfo.companyName, textX, ty); ty -= 15 }
+    if (estimateInfo.companyAddress) { drawText(estimateInfo.companyAddress, textX, ty); ty -= 15 }
+    if (estimateInfo.companyPhone) { drawText(estimateInfo.companyPhone, textX, ty); ty -= 15 }
+    drawText(new Date().toLocaleDateString(), width - 40, y - 40, 12, 'right')
+    y = height - 120
+    drawText('Motor Vehicle Tax Estimate', width / 2, y, 18, 'center')
+    y -= 30
     const customerName = [estimateInfo.customerFirstName, estimateInfo.customerLastName].filter(Boolean).join(' ')
-    if (customerName) { doc.text(`Customer: ${customerName}`, 40, y); y += 18 }
+    if (customerName) { drawText(`Customer: ${customerName}`, 40, y); y -= 18 }
     const vehicleLine = [estimateInfo.vehicleYear, estimateInfo.vehicleMake, estimateInfo.vehicleModel].filter(Boolean).join(' ')
-    if (vehicleLine) { doc.text(`Vehicle: ${vehicleLine}`, 40, y); y += 18 }
-    y += 10
+    if (vehicleLine) { drawText(`Vehicle: ${vehicleLine}`, 40, y); y -= 18 }
+    y -= 10
     const cifStr = formatCurrency(results.value.cifValue)
     const taxStr = formatCurrency(results.value.totalTax)
     const totalStr = formatCurrency(results.value.totalPrice)
-    doc.setFontSize(16)
-    const rowY = y + 30
-    doc.text(`CIF ${cifStr}`, pageWidth / 6, rowY, { align: 'center' })
-    doc.text(`Taxes ${taxStr}`, pageWidth / 2, rowY, { align: 'center' })
-    doc.text(`Total ${totalStr}`, pageWidth * 5 / 6, rowY, { align: 'center' })
-    y = rowY + 40
-    doc.setFontSize(12)
-    doc.text(`Customs Duty: ${formatCurrency(results.value.duty)}`, 40, y); y += 16
-    doc.text(`Excise Tax: ${formatCurrency(results.value.excise)}`, 40, y); y += 16
-    doc.text(`VAT: ${formatCurrency(results.value.vat)}`, 40, y); y += 16
-    doc.text(`Processing Fee: ${formatCurrency(results.value.processingFee)}`, 40, y); y += 16
-    doc.text(`Total Tax Payable: ${taxStr}`, 40, y); y += 16
-    doc.text(`Final Cost: ${totalStr}`, 40, y)
-    doc.save('estimate.pdf')
+    const rowY = y - 30
+    drawText(`CIF ${cifStr}`, width / 6, rowY, 16, 'center')
+    drawText(`Taxes ${taxStr}`, width / 2, rowY, 16, 'center')
+    drawText(`Total ${totalStr}`, width * 5 / 6, rowY, 16, 'center')
+    y = rowY - 40
+    drawText(`Customs Duty: ${formatCurrency(results.value.duty)}`, 40, y); y -= 16
+    drawText(`Excise Tax: ${formatCurrency(results.value.excise)}`, 40, y); y -= 16
+    drawText(`VAT: ${formatCurrency(results.value.vat)}`, 40, y); y -= 16
+    drawText(`Processing Fee: ${formatCurrency(results.value.processingFee)}`, 40, y); y -= 16
+    drawText(`Total Tax Payable: ${taxStr}`, 40, y); y -= 16
+    drawText(`Final Cost: ${totalStr}`, 40, y)
+    const pdfBytes = await pdfDoc.save()
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'estimate.pdf'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(link.href)
     estimateDialog.value = false
 }
 
