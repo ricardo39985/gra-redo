@@ -74,31 +74,38 @@
 
                         <v-card v-if="results" class="mt-8 pa-6 results-card" variant="tonal" color="primary"
                             rounded="xl">
-                            <v-card-title class="font-weight-bold text-center text-h5">Calculation Results</v-card-title>
+                            <v-card-title class="font-weight-bold text-center text-h5">Calculation
+                                Results</v-card-title>
                             <v-card-text>
                                 <v-row class="mb-4" justify="center">
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">CIF Value</div>
-                                            <div class="stat-value" ref="cifRef" :title="results.cifValue.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.cifValue.toLocaleString('en-US', {
-                                                style: 'currency', currency: 'GYD'
-                                            }) }}</div>
+                                            <div class="stat-value" ref="cifRef"
+                                                :title="results.cifValue.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                {{ results.cifValue.toLocaleString('en-US', {
+                                                    style: 'currency', currency: 'GYD'
+                                                }) }}</div>
                                         </v-sheet>
                                     </v-col>
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">Total Tax</div>
-                                            <div class="stat-value" ref="taxRef" :title="results.totalTax.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.totalTax.toLocaleString('en-US', {
-                                                style: 'currency', currency: 'GYD'
-                                            }) }}</div>
+                                            <div class="stat-value" ref="taxRef"
+                                                :title="results.totalTax.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                {{ results.totalTax.toLocaleString('en-US', {
+                                                    style: 'currency', currency: 'GYD'
+                                                }) }}</div>
                                         </v-sheet>
                                     </v-col>
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">Total Cost</div>
-                                            <div class="stat-value" ref="totalRef" :title="results.totalPrice.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.totalPrice.toLocaleString('en-US', {
-                                                style: 'currency', currency: 'GYD'
-                                            }) }}</div>
+                                            <div class="stat-value" ref="totalRef"
+                                                :title="results.totalPrice.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                {{ results.totalPrice.toLocaleString('en-US', {
+                                                    style: 'currency', currency: 'GYD'
+                                                }) }}</div>
                                         </v-sheet>
                                     </v-col>
                                 </v-row>
@@ -132,9 +139,10 @@
                                     <v-list-item prepend-icon="mdi-cog-outline">
                                         <v-list-item-title>Processing Fee</v-list-item-title>
                                         <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.processingFee.toLocaleString('en-US', {
-                                                style: 'currency', currency: 'GYD'
-                                            }) }}</span>
+                                            <span class="font-weight-medium">{{
+                                                results.processingFee.toLocaleString('en-US', {
+                                                    style: 'currency', currency: 'GYD'
+                                                }) }}</span>
                                         </template>
                                     </v-list-item>
                                 </v-list>
@@ -192,13 +200,22 @@ const taxRef = ref(null)
 const totalRef = ref(null)
 
 function fitText(el) {
-    if (!el) return
+    if (!el || !el.parentElement) return
+
+    // Reset to stylesheet value to get a baseline
     el.style.fontSize = ''
-    const parentWidth = el.parentElement ? el.parentElement.clientWidth : 0
-    let fontSize = parseFloat(getComputedStyle(el).fontSize)
-    while (el.scrollWidth > parentWidth && fontSize > 10) {
-        fontSize -= 1
-        el.style.fontSize = fontSize + 'px'
+
+    const parent = el.parentElement
+    const parentStyle = window.getComputedStyle(parent)
+    const availableWidth = parent.clientWidth - parseFloat(parentStyle.paddingLeft) - parseFloat(parentStyle.paddingRight)
+
+    // Only resize if the text is actually overflowing
+    if (el.scrollWidth > availableWidth) {
+        const currentFontSize = parseFloat(window.getComputedStyle(el).fontSize)
+        // Calculate the new font size based on the ratio of available width to text width.
+        const newFontSize = Math.floor(currentFontSize * (availableWidth / el.scrollWidth))
+        const minFontSize = 10 // px
+        el.style.fontSize = Math.max(newFontSize, minFontSize) + 'px'
     }
 }
 
@@ -466,5 +483,6 @@ useHead({
     font-weight: 700;
     font-size: clamp(1rem, 5vw, 2.5rem);
     white-space: nowrap;
+    overflow: hidden;
 }
 </style>
