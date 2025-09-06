@@ -671,8 +671,7 @@ function calculateGasoline() {
             excise = 800000; // This is in GYD
             totalTax = excise;
         } else {
-            if (cc.value <= 1800) { excise = (cif.value + 6000) * 0.30 + 6000; }
-            else if (cc.value <= 2000) { excise = (cif.value + 6500) * 0.30 + 6500; }
+            if (cc.value <= 2000) { excise = (cif.value + 8200) * 0.30 + 8200; }
             else if (cc.value <= 3000) { excise = (cif.value + 13500) * 0.70 + 13500; }
             else { excise = (cif.value + 14500) * 1.00 + 14500; }
             totalTax = excise * exchange_rate.value;
@@ -710,7 +709,7 @@ function calculateDiesel() {
             excise = 800000; // GYD
             totalTax = excise;
         } else {
-            if (cc.value <= 2000) { excise = (cif.value + 15400) * 0.30 + 15400; }
+            if (cc.value <= 2000) { excise = (cif.value + 8200) * 0.30 + 8200; }
             else if (cc.value <= 2500) { excise = (cif.value + 15400) * 0.70 + 15400; }
             else if (cc.value <= 3000) { excise = (cif.value + 15500) * 0.70 + 15500; }
             else { excise = (cif.value + 17200) * 1.00 + 17200; }
