@@ -178,11 +178,11 @@
                               <v-file-input label="Logo" accept="image/*" @change="onLogoChange"></v-file-input>
                               <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-2" max-height="100" contain></v-img>
                             </v-form>
-                            <div class="text-center mt-4">
-                              <v-btn color="primary" @click="generateEstimatePdf">Download PDF</v-btn>
-                            </div>
                             <div v-if="pdfPreviewUrl" class="mt-4">
-                              <iframe :src="pdfPreviewUrl" width="100%" height="600" style="border: none;"></iframe>
+                              <iframe :src="pdfPreviewSrc" width="100%" height="600" style="border: none;"></iframe>
+                            </div>
+                            <div class="text-center mt-4">
+                              <v-btn color="primary" @click="downloadEstimatePdf" :disabled="!pdfPreviewUrl">Download PDF</v-btn>
                             </div>
                           </v-card>
                         </v-window-item>
@@ -241,6 +241,11 @@ const taxRef = ref(null)
 const totalRef = ref(null)
 const activeTab = ref('results')
 const pdfPreviewUrl = ref('')
+const pdfPreviewSrc = computed(() =>
+    pdfPreviewUrl.value
+        ? `${pdfPreviewUrl.value}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`
+        : ''
+)
 const estimateInfo = reactive({
     vehicleYear: '',
     vehicleMake: '',
@@ -274,7 +279,7 @@ function onLogoChange(e) {
     reader.readAsDataURL(file)
 }
 
-async function generateEstimatePdf() {
+async function generateEstimatePdf(download = false) {
     if (!results.value) return
     const pdfDoc = await PDFDocument.create()
     const page = pdfDoc.addPage([595.28, 841.89])
@@ -422,12 +427,18 @@ async function generateEstimatePdf() {
     const blob = new Blob([pdfBytes], { type: 'application/pdf' })
     if (pdfPreviewUrl.value) URL.revokeObjectURL(pdfPreviewUrl.value)
     pdfPreviewUrl.value = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = pdfPreviewUrl.value
-    link.download = 'estimate.pdf'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    if (download) {
+        const link = document.createElement('a')
+        link.href = pdfPreviewUrl.value
+        link.download = 'estimate.pdf'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+}
+
+function downloadEstimatePdf() {
+    generateEstimatePdf(true)
 }
 
 function fitText(el) {
@@ -455,16 +466,21 @@ function updateStatSizes() {
 }
 
 watch(results, () => {
-    nextTick(updateStatSizes)
+    nextTick(() => {
+        updateStatSizes()
+        if (results.value) generateEstimatePdf(false)
+    })
 })
 
 watch(estimateInfo, () => {
     localStorage.setItem('estimateInfo', JSON.stringify(estimateInfo))
+    if (results.value) generateEstimatePdf(false)
 }, { deep: true })
 
 watch(activeTab, val => {
     if (val === 'estimate') {
         estimateInfo.vehicleYear = vehicleYear.value ? String(vehicleYear.value) : estimateInfo.vehicleYear
+        if (results.value) generateEstimatePdf(false)
     }
 })
 
