@@ -166,6 +166,8 @@
                                         <v-label class="font-weight-bold mb-1 d-block">Customer Details</v-label>
                                         <v-text-field v-model="estimateInfo.customerFirstName" label="First Name"></v-text-field>
                                         <v-text-field v-model="estimateInfo.customerLastName" label="Last Name"></v-text-field>
+                                        <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email"></v-text-field>
+                                        <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel"></v-text-field>
                                         <v-divider class="my-4"></v-divider>
                                         <v-label class="font-weight-bold mb-1 d-block">Company Details</v-label>
                                         <v-text-field v-model="estimateInfo.companyName" label="Name"></v-text-field>
@@ -207,7 +209,7 @@
 <script setup>
 import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
-import { PDFDocument, StandardFonts } from 'pdf-lib'
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 
 // Theme toggling
 const theme = useTheme()
@@ -240,6 +242,8 @@ const estimateInfo = reactive({
     vehicleModel: '',
     customerFirstName: '',
     customerLastName: '',
+    customerEmail: '',
+    customerPhone: '',
     companyName: '',
     companyAddress: '',
     companyPhone: '',
@@ -274,51 +278,108 @@ async function generateEstimatePdf() {
     const page = pdfDoc.addPage([595.28, 841.89])
     const { width, height } = page.getSize()
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const drawText = (text, x, y, size = 12, align = 'left') => {
-        const textWidth = font.widthOfTextAtSize(text, size)
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    const drawText = (text, x, y, size = 12, options = {}) => {
+        const { align = 'left', font: f = font, color = rgb(0, 0, 0) } = options
+        const textWidth = f.widthOfTextAtSize(text, size)
         let drawX = x
         if (align === 'center') drawX = x - textWidth / 2
         if (align === 'right') drawX = x - textWidth
-        page.drawText(text, { x: drawX, y, size, font })
+        page.drawText(text, { x: drawX, y, size, font: f, color })
     }
-    let y = height - 40
+    const margin = 40
+    let y = height - margin
+
     if (estimateInfo.companyLogo) {
         try {
             const imgBytes = await fetch(estimateInfo.companyLogo).then(r => r.arrayBuffer())
             const img = estimateInfo.companyLogo.startsWith('data:image/png')
                 ? await pdfDoc.embedPng(imgBytes)
                 : await pdfDoc.embedJpg(imgBytes)
-            page.drawImage(img, { x: 40, y: y - 60, width: 60, height: 60 })
+            page.drawImage(img, { x: margin, y: y - 60, width: 60, height: 60 })
         } catch (e) { }
     }
-    let textX = estimateInfo.companyLogo ? 110 : 40
-    let ty = y - 15
-    if (estimateInfo.companyName) { drawText(estimateInfo.companyName, textX, ty); ty -= 15 }
-    if (estimateInfo.companyAddress) { drawText(estimateInfo.companyAddress, textX, ty); ty -= 15 }
-    if (estimateInfo.companyPhone) { drawText(estimateInfo.companyPhone, textX, ty); ty -= 15 }
-    drawText(new Date().toLocaleDateString(), width - 40, y - 40, 12, 'right')
-    y = height - 120
-    drawText('Motor Vehicle Tax Estimate', width / 2, y, 18, 'center')
+
+    let infoX = estimateInfo.companyLogo ? margin + 70 : margin
+    let infoY = y - 15
+    if (estimateInfo.companyName) { drawText(estimateInfo.companyName, infoX, infoY, 12, { font: fontBold }); infoY -= 14 }
+    if (estimateInfo.companyAddress) { drawText(estimateInfo.companyAddress, infoX, infoY); infoY -= 14 }
+    if (estimateInfo.companyPhone) { drawText(estimateInfo.companyPhone, infoX, infoY); infoY -= 14 }
+
+    drawText(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, width - margin, y - 15, 12, { align: 'right' })
+
+    y -= 80
+    drawText('Motor Vehicle Tax Estimate', width / 2, y, 18, { align: 'center', font: fontBold })
+
     y -= 30
-    const customerName = [estimateInfo.customerFirstName, estimateInfo.customerLastName].filter(Boolean).join(' ')
-    if (customerName) { drawText(`Customer: ${customerName}`, 40, y); y -= 18 }
-    const vehicleLine = [estimateInfo.vehicleYear, estimateInfo.vehicleMake, estimateInfo.vehicleModel].filter(Boolean).join(' ')
-    if (vehicleLine) { drawText(`Vehicle: ${vehicleLine}`, 40, y); y -= 18 }
-    y -= 10
-    const cifStr = formatCurrency(results.value.cifValue)
-    const taxStr = formatCurrency(results.value.totalTax)
-    const totalStr = formatCurrency(results.value.totalPrice)
-    const rowY = y - 30
-    drawText(`CIF ${cifStr}`, width / 6, rowY, 16, 'center')
-    drawText(`Taxes ${taxStr}`, width / 2, rowY, 16, 'center')
-    drawText(`Total ${totalStr}`, width * 5 / 6, rowY, 16, 'center')
-    y = rowY - 40
-    drawText(`Customs Duty: ${formatCurrency(results.value.duty)}`, 40, y); y -= 16
-    drawText(`Excise Tax: ${formatCurrency(results.value.excise)}`, 40, y); y -= 16
-    drawText(`VAT: ${formatCurrency(results.value.vat)}`, 40, y); y -= 16
-    drawText(`Processing Fee: ${formatCurrency(results.value.processingFee)}`, 40, y); y -= 16
-    drawText(`Total Tax Payable: ${taxStr}`, 40, y); y -= 16
-    drawText(`Final Cost: ${totalStr}`, 40, y)
+    const hasCustomerInfo = estimateInfo.customerFirstName || estimateInfo.customerLastName || estimateInfo.customerEmail || estimateInfo.customerPhone
+    if (hasCustomerInfo) {
+        drawText('Customer Details', margin, y, 14, { font: fontBold })
+        y -= 18
+        const name = [estimateInfo.customerFirstName, estimateInfo.customerLastName].filter(Boolean).join(' ')
+        if (name) { drawText(`Name: ${name}`, margin, y); y -= 16 }
+        if (estimateInfo.customerEmail) { drawText(`Email: ${estimateInfo.customerEmail}`, margin, y); y -= 16 }
+        if (estimateInfo.customerPhone) { drawText(`Phone: ${estimateInfo.customerPhone}`, margin, y); y -= 16 }
+        y -= 10
+    }
+
+    drawText('Vehicle Details', margin, y, 14, { font: fontBold })
+    y -= 18
+    const vehicleItems = [
+        ['Vehicle Type:', vehicle_type.value],
+        ['Vehicle Year:', estimateInfo.vehicleYear || ''],
+        ['Engine Capacity:', cc.value ? `${cc.value} ${fuel.value === 'Electric' ? 'KW' : 'CC'}` : ''],
+        ['CIF Value:', formatCurrency(results.value.cifValue)],
+        ['Exchange Rate:', exchange_rate.value ? exchange_rate.value.toLocaleString('en-US', { style: 'currency', currency: 'GYD' }) : '']
+    ]
+    vehicleItems.forEach(item => {
+        if (item[1]) {
+            drawText(item[0], margin, y)
+            drawText(item[1], margin + 160, y)
+            y -= 16
+        }
+    })
+
+    drawText('Values shown in GYD.', width - margin, y + 10, 10, { align: 'right', color: rgb(0.4, 0.4, 0.4) })
+
+    y -= 30
+    const glanceHeight = 60
+    const boxWidth = (width - margin * 2 - 20) / 3
+    const boxY = y - glanceHeight
+    const glanceData = [
+        { label: 'CIF', value: formatCurrency(results.value.cifValue), color: rgb(0.25, 0.5, 0.95) },
+        { label: 'Taxes', value: formatCurrency(results.value.totalTax), color: rgb(0.85, 0.2, 0.2) },
+        { label: 'Total', value: formatCurrency(results.value.totalPrice), color: rgb(0.0, 0.5, 0.3) }
+    ]
+    glanceData.forEach((g, i) => {
+        const x = margin + i * (boxWidth + 10)
+        page.drawRectangle({ x, y: boxY, width: boxWidth, height: glanceHeight, color: rgb(0.95, 0.95, 0.95), borderColor: g.color, borderWidth: 1 })
+        drawText(g.label, x + boxWidth / 2, boxY + glanceHeight - 18, 12, { align: 'center', font: fontBold, color: g.color })
+        drawText(g.value, x + boxWidth / 2, boxY + 20, 14, { align: 'center', font: fontBold, color: g.color })
+    })
+
+    y = boxY - 40
+    drawText('Taxes & Costs', margin, y, 14, { font: fontBold })
+    y -= 18
+    const costItems = [
+        ['CIF Value:', formatCurrency(results.value.cifValue)],
+        ['Customs Duty:', formatCurrency(results.value.duty)],
+        ['Excise Tax:', formatCurrency(results.value.excise)],
+        ['VAT:', formatCurrency(results.value.vat)],
+        ['Processing Fee:', formatCurrency(results.value.processingFee)],
+        ['Total Tax Payable:', formatCurrency(results.value.totalTax)],
+        ['Final Cost:', formatCurrency(results.value.totalPrice)]
+    ]
+    costItems.forEach((item, idx) => {
+        let f = idx >= 5 ? fontBold : font
+        let color = idx === 6 ? rgb(0.0, 0.5, 0.3) : rgb(0, 0, 0)
+        drawText(item[0], margin, y, 12, { font: f, color })
+        drawText(item[1], width - margin, y, 12, { align: 'right', font: f, color })
+        y -= 16
+    })
+
+    const disclaimer = 'This estimate is for guidance only. Taxes are computed as customs duty, excise, VAT and a $1,000 processing fee applied to your CIF value.'
+    drawText(disclaimer, width / 2, 60, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) })
     const pdfBytes = await pdfDoc.save()
     const blob = new Blob([pdfBytes], { type: 'application/pdf' })
     const link = document.createElement('a')
