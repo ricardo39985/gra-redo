@@ -110,7 +110,7 @@
                                     </v-col>
                                 </v-row>
                                 <v-divider class="my-4"></v-divider>
-                                <v-list class="bg-transparent" lines="one">
+                                <v-list class="bg-transparent tax-breakdown" lines="one">
                                     <v-list-item prepend-icon="mdi-percent-outline">
                                         <v-list-item-title>Customs Duty</v-list-item-title>
                                         <template v-slot:append>
@@ -485,4 +485,11 @@ useHead({
     white-space: nowrap;
     overflow: hidden;
 }
+
+.tax-breakdown .v-list-item-title,
+.tax-breakdown .v-list-item .v-icon,
+.tax-breakdown .v-list-item span {
+    color: rgba(var(--v-theme-on-surface), 0.87) !important;
+}
+
 </style>
