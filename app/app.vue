@@ -80,7 +80,7 @@
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">CIF Value</div>
-                                            <div class="stat-value">{{ results.cifValue.toLocaleString('en-US', {
+                                            <div class="whitespace-nowrap text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">{{ results.cifValue.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</div>
                                         </v-sheet>
@@ -88,7 +88,7 @@
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">Total Tax</div>
-                                            <div class="stat-value">{{ results.totalTax.toLocaleString('en-US', {
+                                            <div class="whitespace-nowrap text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">{{ results.totalTax.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</div>
                                         </v-sheet>
@@ -96,7 +96,7 @@
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">Total Cost</div>
-                                            <div class="stat-value">{{ results.totalPrice.toLocaleString('en-US', {
+                                            <div class="whitespace-nowrap text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">{{ results.totalPrice.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</div>
                                         </v-sheet>
@@ -429,10 +429,5 @@ useHead({
 .stat-title {
     font-size: 1rem;
     opacity: 0.9;
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: 700;
 }
 </style>
