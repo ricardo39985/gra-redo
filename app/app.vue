@@ -176,6 +176,7 @@ const plate = ref('P')
 
 const error = ref(null)
 const results = ref(null)
+const processingFee = 0 // GYD processing fee
 
 const ageCategory = computed(() => {
     if (!vehicleYear.value) return null;
@@ -351,16 +352,18 @@ function calculateTax() {
 
     let dutyGyd = 0, exciseGyd = 0, vatGyd = 0;
 
-    if (age.value === 'under4' && plate.value !== 'G' && fuel.value !== 'Electric') {
+    if (ageCategory.value === 'under4' && plate.value !== 'G' && fuel.value !== 'Electric') {
         dutyGyd = duty * exchange_rate.value;
         exciseGyd = excise * exchange_rate.value;
         vatGyd = vat * exchange_rate.value;
-    } else if (age.value === 'over4' && plate.value !== 'G') {
+    } else if (ageCategory.value === 'over4' && plate.value !== 'G') {
         // For older cars, `totalTax` is already in GYD and represents excise tax only.
         exciseGyd = totalTax;
     } else if (plate.value === 'G') {
         exciseGyd = totalTax;
     }
+
+    const totalTaxWithFee = totalTax + processingFee;
 
     results.value = {
         cifValue: cifGyd,
@@ -368,8 +371,8 @@ function calculateTax() {
         excise: exciseGyd, // Already in GYD or 0
         vat: vatGyd, // Already in GYD or 0
         processingFee,
-        totalTax,
-        totalPrice: cifGyd + totalTax,
+        totalTax: totalTaxWithFee,
+        totalPrice: cifGyd + totalTaxWithFee,
     };
 }
 
