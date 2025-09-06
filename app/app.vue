@@ -176,7 +176,7 @@ const plate = ref('P')
 
 const error = ref(null)
 const results = ref(null)
-const processingFee = 5000 // GYD processing fee
+const processingFee = 0 // GYD processing fee
 
 const ageCategory = computed(() => {
     if (!vehicleYear.value) return null;
