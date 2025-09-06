@@ -651,12 +651,12 @@ function calculateGasoline() {
         if (cc.value <= 1500) {
             dutyRate = 0.35;
         } else if (cc.value <= 2000) {
-            dutyRate = vehicle_type.value === 'Single Cab' ? 0 : 0.45;
-            exciseRate = vehicle_type.value === 'Single Cab' ? 0 : 0.10;
+            dutyRate = 0.45;
+            exciseRate = 0.10;
         } else if (cc.value <= 3000) {
-            dutyRate = (vehicle_type.value === 'Single Cab' || vehicle_type.value === 'Double Cab') ? 0 : 0.45;
-            exciseRate = vehicle_type.value === 'Double Cab' ? 0.75 : (vehicle_type.value === 'Single Cab' ? 0 : 1.10);
-        } else { // 4000
+            dutyRate = 0.45;
+            exciseRate = 1.10;
+        } else {
             dutyRate = 0.45;
             exciseRate = 1.40;
         }
@@ -670,12 +670,20 @@ function calculateGasoline() {
         if (cc.value <= 1000) {
             excise = 800000; // This is in GYD
             totalTax = excise;
+        } else if (cc.value <= 1500) {
+            excise = 800000; // GYD flat rate
+            totalTax = excise;
+        } else if (cc.value <= 1800) {
+            excise = (cif.value + 6000) * 0.30 + 6000;
+            totalTax = excise * exchange_rate.value;
+        } else if (cc.value <= 2000) {
+            excise = (cif.value + 6500) * 0.30 + 6500;
+            totalTax = excise * exchange_rate.value;
+        } else if (cc.value <= 3000) {
+            excise = (cif.value + 13500) * 0.70 + 13500;
+            totalTax = excise * exchange_rate.value;
         } else {
-            if (cc.value <= 1500) { excise = (cif.value + 6500) * 0.30 + 6000; }
-            else if (cc.value <= 1800) { excise = (cif.value + 6500) * 0.70 + 6500; }
-            else if (cc.value <= 2000) { excise = (cif.value + 13500) * 0.70 + 13500; }
-            else if (cc.value <= 3000) { excise = (cif.value + 13500) * 0.70 + 13500; }
-            else { excise = (cif.value + 14500) * 0.70 + 14500; }
+            excise = (cif.value + 14500) * 1.00 + 14500;
             totalTax = excise * exchange_rate.value;
         }
     }
@@ -691,12 +699,12 @@ function calculateDiesel() {
         if (cc.value <= 1500) {
             dutyRate = 0.35;
         } else if (cc.value <= 2000) {
-            dutyRate = (vehicle_type.value === 'Single Cab' || vehicle_type.value === 'Double Cab') ? 0 : 0.45;
-            exciseRate = (vehicle_type.value === 'Single Cab' || vehicle_type.value === 'Double Cab') ? 0 : 0.10;
-        } else if (cc.value <= 3000) {
             dutyRate = 0.45;
-            exciseRate = vehicle_type.value === 'Double Cab' ? 0.75 : (vehicle_type.value === 'Single Cab' ? 0 : 1.10);
-        } else { // 4000
+            exciseRate = 0.10;
+        } else if (cc.value <= 2500) {
+            dutyRate = 0.45;
+            exciseRate = 1.10;
+        } else {
             dutyRate = 0.45;
             exciseRate = 1.10;
         }
@@ -710,11 +718,17 @@ function calculateDiesel() {
         if (cc.value <= 1500) {
             excise = 800000; // GYD
             totalTax = excise;
+        } else if (cc.value <= 2000) {
+            excise = (cif.value + 15400) * 0.30 + 15400;
+            totalTax = excise * exchange_rate.value;
+        } else if (cc.value <= 2500) {
+            excise = (cif.value + 15400) * 0.70 + 15400;
+            totalTax = excise * exchange_rate.value;
+        } else if (cc.value <= 3000) {
+            excise = (cif.value + 15500) * 0.70 + 15500;
+            totalTax = excise * exchange_rate.value;
         } else {
-            if (cc.value <= 2000) { excise = (cif.value + 8200) * 0.30 + 8200; }
-            else if (cc.value <= 2500) { excise = (cif.value + 15400) * 0.70 + 15400; }
-            else if (cc.value <= 3000) { excise = (cif.value + 15500) * 0.70 + 15500; }
-            else { excise = (cif.value + 17200) * 1.00 + 17200; }
+            excise = (cif.value + 17200) * 1.00 + 17200;
             totalTax = excise * exchange_rate.value;
         }
     }
