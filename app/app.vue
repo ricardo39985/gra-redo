@@ -72,10 +72,17 @@
                             </v-card-actions>
                         </v-card>
 
-                        <v-card v-if="results" class="mt-8 pa-0 results-card" variant="tonal" color="primary"
-                            rounded="xl">
-                            <v-card-title class="font-weight-bold text-center text-h5">Calculation
-                                Results</v-card-title>
+                        <div v-if="results" class="mt-8">
+                            <v-tabs v-model="activeTab" grow>
+                                <v-tab value="results">Results</v-tab>
+                                <v-tab value="estimate">Print Estimate</v-tab>
+                            </v-tabs>
+                            <v-window v-model="activeTab" class="mt-4">
+                                <v-window-item value="results">
+                                    <v-card class="pa-0 results-card" variant="tonal" color="primary"
+                                        rounded="xl">
+                                        <v-card-title class="font-weight-bold text-center text-h5">Calculation
+                                            Results</v-card-title>
                             <v-card-text>
                                 <v-row class="mb-4" justify="center">
                                     <v-col cols="12" md="4">
@@ -147,45 +154,42 @@
                                     </v-list-item>
                                 </v-list>
                         </v-card-text>
-                        </v-card>
+                          </v-card>
+                        </v-window-item>
+                        <v-window-item value="estimate">
+                          <v-card class="pa-4" rounded="xl">
+                            <v-form>
+                              <v-label class="font-weight-bold mb-1 d-block">Vehicle Details</v-label>
+                              <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number"></v-text-field>
+                              <v-text-field v-model="estimateInfo.vehicleMake" label="Make"></v-text-field>
+                              <v-text-field v-model="estimateInfo.vehicleModel" label="Model"></v-text-field>
+                              <v-divider class="my-4"></v-divider>
+                              <v-label class="font-weight-bold mb-1 d-block">Customer Details</v-label>
+                              <v-text-field v-model="estimateInfo.customerFirstName" label="First Name"></v-text-field>
+                              <v-text-field v-model="estimateInfo.customerLastName" label="Last Name"></v-text-field>
+                              <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email"></v-text-field>
+                              <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel"></v-text-field>
+                              <v-divider class="my-4"></v-divider>
+                              <v-label class="font-weight-bold mb-1 d-block">Company Details</v-label>
+                              <v-text-field v-model="estimateInfo.companyName" label="Name"></v-text-field>
+                              <v-text-field v-model="estimateInfo.companyAddress" label="Address"></v-text-field>
+                              <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email"></v-text-field>
+                              <v-text-field v-model="estimateInfo.companyPhone" label="Phone"></v-text-field>
+                              <v-file-input label="Logo" accept="image/*" @change="onLogoChange"></v-file-input>
+                              <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-2" max-height="100" contain></v-img>
+                            </v-form>
+                            <div class="text-center mt-4">
+                              <v-btn color="primary" @click="generateEstimatePdf">Download PDF</v-btn>
+                            </div>
+                            <div v-if="pdfPreviewUrl" class="mt-4">
+                              <iframe :src="pdfPreviewUrl" width="100%" height="600" style="border: none;"></iframe>
+                            </div>
+                          </v-card>
+                        </v-window-item>
+                      </v-window>
+                    </div>
 
-                        <v-btn v-if="results" class="mt-4" color="primary" @click="openEstimateDialog">
-                            Print Estimate
-                        </v-btn>
-
-                        <v-dialog v-model="estimateDialog" max-width="600">
-                            <v-card>
-                                <v-card-title class="text-h6 font-weight-bold">Print Estimate</v-card-title>
-                                <v-card-text>
-                                    <v-form>
-                                        <v-label class="font-weight-bold mb-1 d-block">Vehicle Details</v-label>
-                                        <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number"></v-text-field>
-                                        <v-text-field v-model="estimateInfo.vehicleMake" label="Make"></v-text-field>
-                                        <v-text-field v-model="estimateInfo.vehicleModel" label="Model"></v-text-field>
-                                        <v-divider class="my-4"></v-divider>
-                                        <v-label class="font-weight-bold mb-1 d-block">Customer Details</v-label>
-                                        <v-text-field v-model="estimateInfo.customerFirstName" label="First Name"></v-text-field>
-                                        <v-text-field v-model="estimateInfo.customerLastName" label="Last Name"></v-text-field>
-                                        <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email"></v-text-field>
-                                        <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel"></v-text-field>
-                                        <v-divider class="my-4"></v-divider>
-                                        <v-label class="font-weight-bold mb-1 d-block">Company Details</v-label>
-                                        <v-text-field v-model="estimateInfo.companyName" label="Name"></v-text-field>
-                                        <v-text-field v-model="estimateInfo.companyAddress" label="Address"></v-text-field>
-                                        <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email"></v-text-field>
-                                        <v-text-field v-model="estimateInfo.companyPhone" label="Phone"></v-text-field>
-                                        <v-file-input label="Logo" accept="image/*" @change="onLogoChange"></v-file-input>
-                                    </v-form>
-                                </v-card-text>
-                                <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn text @click="estimateDialog = false">Cancel</v-btn>
-                                    <v-btn color="primary" @click="generateEstimatePdf">Download PDF</v-btn>
-                                </v-card-actions>
-                            </v-card>
-                        </v-dialog>
-
-                        <footer class="text-center text-caption text-medium-emphasis py-8">
+                          <footer class="text-center text-caption text-medium-emphasis py-8">
                             <p>
                                 This calculator is not affiliated with or endorsed by the
                                 <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
@@ -235,8 +239,8 @@ const processingFee = 0 // GYD processing fee
 const cifRef = ref(null)
 const taxRef = ref(null)
 const totalRef = ref(null)
-
-const estimateDialog = ref(false)
+const activeTab = ref('results')
+const pdfPreviewUrl = ref('')
 const estimateInfo = reactive({
     vehicleYear: '',
     vehicleMake: '',
@@ -256,10 +260,6 @@ function formatCurrency(val) {
     return Number(val).toLocaleString('en-US', { style: 'currency', currency: 'GYD' })
 }
 
-function openEstimateDialog() {
-    estimateInfo.vehicleYear = vehicleYear.value ? String(vehicleYear.value) : estimateInfo.vehicleYear
-    estimateDialog.value = true
-}
 
 function onLogoChange(e) {
     const file = e?.target?.files?.[0] || (Array.isArray(e) ? e[0] : e)
@@ -348,6 +348,8 @@ async function generateEstimatePdf() {
     const vehicleItems = [
         ['Vehicle Type:', vehicle_type.value],
         ['Vehicle Year:', estimateInfo.vehicleYear || ''],
+        ['Vehicle Make:', estimateInfo.vehicleMake || ''],
+        ['Vehicle Model:', estimateInfo.vehicleModel || ''],
         ['Engine Capacity:', cc.value ? `${cc.value} ${fuel.value === 'Electric' ? 'KW' : 'CC'}` : ''],
         ['CIF Value:', formatCurrency(results.value.cifValue)],
         ['Exchange Rate:', exchange_rate.value ? exchange_rate.value.toLocaleString('en-US', { style: 'currency', currency: 'GYD' }) : '']
@@ -418,14 +420,14 @@ async function generateEstimatePdf() {
     })
     const pdfBytes = await pdfDoc.save()
     const blob = new Blob([pdfBytes], { type: 'application/pdf' })
+    if (pdfPreviewUrl.value) URL.revokeObjectURL(pdfPreviewUrl.value)
+    pdfPreviewUrl.value = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
+    link.href = pdfPreviewUrl.value
     link.download = 'estimate.pdf'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    URL.revokeObjectURL(link.href)
-    estimateDialog.value = false
 }
 
 function fitText(el) {
@@ -460,6 +462,12 @@ watch(estimateInfo, () => {
     localStorage.setItem('estimateInfo', JSON.stringify(estimateInfo))
 }, { deep: true })
 
+watch(activeTab, val => {
+    if (val === 'estimate') {
+        estimateInfo.vehicleYear = vehicleYear.value ? String(vehicleYear.value) : estimateInfo.vehicleYear
+    }
+})
+
 watch([fuel, vehicle_type, vehicleYear, plate, cc, cif, exchange_rate], () => {
     const data = {
         fuel: fuel.value,
@@ -492,6 +500,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     window.removeEventListener('resize', updateStatSizes)
+    if (pdfPreviewUrl.value) URL.revokeObjectURL(pdfPreviewUrl.value)
 })
 
 const ageCategory = computed(() => {
