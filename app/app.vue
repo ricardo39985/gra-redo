@@ -292,6 +292,7 @@ function onLogoChange(e) {
     const reader = new FileReader()
     reader.onload = evt => {
         estimateInfo.companyLogo = evt.target.result
+        if (results.value) generateEstimatePdf(false)
     }
     reader.readAsDataURL(file)
 }
@@ -443,8 +444,9 @@ async function generateEstimatePdf(download = false) {
     })
     const pdfBytes = await pdfDoc.save()
     const blob = new Blob([pdfBytes], { type: 'application/pdf' })
-    if (pdfPreviewUrl.value) URL.revokeObjectURL(pdfPreviewUrl.value)
+    const oldUrl = pdfPreviewUrl.value
     pdfPreviewUrl.value = URL.createObjectURL(blob)
+    if (oldUrl) URL.revokeObjectURL(oldUrl)
     if (download) {
         const link = document.createElement('a')
         link.href = pdfPreviewUrl.value
