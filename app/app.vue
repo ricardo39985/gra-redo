@@ -80,7 +80,7 @@
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">CIF Value</div>
-                                            <div class="stat-value" :title="results.cifValue.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.cifValue.toLocaleString('en-US', {
+                                            <div class="stat-value" ref="cifRef" :title="results.cifValue.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.cifValue.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</div>
                                         </v-sheet>
@@ -88,7 +88,7 @@
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">Total Tax</div>
-                                            <div class="stat-value" :title="results.totalTax.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.totalTax.toLocaleString('en-US', {
+                                            <div class="stat-value" ref="taxRef" :title="results.totalTax.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.totalTax.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</div>
                                         </v-sheet>
@@ -96,7 +96,7 @@
                                     <v-col cols="12" md="4">
                                         <v-sheet class="stat-card text-center" rounded="lg">
                                             <div class="stat-title">Total Cost</div>
-                                            <div class="stat-value" :title="results.totalPrice.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.totalPrice.toLocaleString('en-US', {
+                                            <div class="stat-value" ref="totalRef" :title="results.totalPrice.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">{{ results.totalPrice.toLocaleString('en-US', {
                                                 style: 'currency', currency: 'GYD'
                                             }) }}</div>
                                         </v-sheet>
@@ -164,7 +164,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
 
 // Theme toggling
@@ -186,6 +186,37 @@ const plate = ref('P')
 const error = ref(null)
 const results = ref(null)
 const processingFee = 0 // GYD processing fee
+
+const cifRef = ref(null)
+const taxRef = ref(null)
+const totalRef = ref(null)
+
+function fitText(el) {
+    if (!el) return
+    el.style.fontSize = ''
+    const parentWidth = el.parentElement ? el.parentElement.clientWidth : 0
+    let fontSize = parseFloat(getComputedStyle(el).fontSize)
+    while (el.scrollWidth > parentWidth && fontSize > 10) {
+        fontSize -= 1
+        el.style.fontSize = fontSize + 'px'
+    }
+}
+
+function updateStatSizes() {
+    ;[cifRef.value, taxRef.value, totalRef.value].forEach(fitText)
+}
+
+watch(results, () => {
+    nextTick(updateStatSizes)
+})
+
+onMounted(() => {
+    window.addEventListener('resize', updateStatSizes)
+})
+
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', updateStatSizes)
+})
 
 const ageCategory = computed(() => {
     if (!vehicleYear.value) return null;
@@ -435,7 +466,5 @@ useHead({
     font-weight: 700;
     font-size: clamp(1rem, 5vw, 2.5rem);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 </style>
