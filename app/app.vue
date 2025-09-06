@@ -146,8 +146,41 @@
                                         </template>
                                     </v-list-item>
                                 </v-list>
-                            </v-card-text>
+                        </v-card-text>
                         </v-card>
+
+                        <v-btn v-if="results" class="mt-4" color="primary" @click="openEstimateDialog">
+                            Print Estimate
+                        </v-btn>
+
+                        <v-dialog v-model="estimateDialog" max-width="600">
+                            <v-card>
+                                <v-card-title class="text-h6 font-weight-bold">Print Estimate</v-card-title>
+                                <v-card-text>
+                                    <v-form>
+                                        <v-label class="font-weight-bold mb-1 d-block">Vehicle Details</v-label>
+                                        <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number"></v-text-field>
+                                        <v-text-field v-model="estimateInfo.vehicleMake" label="Make"></v-text-field>
+                                        <v-text-field v-model="estimateInfo.vehicleModel" label="Model"></v-text-field>
+                                        <v-divider class="my-4"></v-divider>
+                                        <v-label class="font-weight-bold mb-1 d-block">Customer Details</v-label>
+                                        <v-text-field v-model="estimateInfo.customerFirstName" label="First Name"></v-text-field>
+                                        <v-text-field v-model="estimateInfo.customerLastName" label="Last Name"></v-text-field>
+                                        <v-divider class="my-4"></v-divider>
+                                        <v-label class="font-weight-bold mb-1 d-block">Company Details</v-label>
+                                        <v-text-field v-model="estimateInfo.companyName" label="Name"></v-text-field>
+                                        <v-text-field v-model="estimateInfo.companyAddress" label="Address"></v-text-field>
+                                        <v-text-field v-model="estimateInfo.companyPhone" label="Phone"></v-text-field>
+                                        <v-file-input label="Logo" accept="image/*" @change="onLogoChange"></v-file-input>
+                                    </v-form>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn text @click="estimateDialog = false">Cancel</v-btn>
+                                    <v-btn color="primary" @click="generateEstimatePdf">Download PDF</v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-dialog>
 
                         <footer class="text-center text-caption text-medium-emphasis py-8">
                             <p>
@@ -172,8 +205,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
+import { jsPDF } from 'jspdf'
 
 // Theme toggling
 const theme = useTheme()
@@ -198,6 +232,87 @@ const processingFee = 0 // GYD processing fee
 const cifRef = ref(null)
 const taxRef = ref(null)
 const totalRef = ref(null)
+
+const estimateDialog = ref(false)
+const estimateInfo = reactive({
+    vehicleYear: '',
+    vehicleMake: '',
+    vehicleModel: '',
+    customerFirstName: '',
+    customerLastName: '',
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyLogo: ''
+})
+
+function formatCurrency(val) {
+    return Number(val).toLocaleString('en-US', { style: 'currency', currency: 'GYD' })
+}
+
+function openEstimateDialog() {
+    estimateInfo.vehicleYear = vehicleYear.value ? String(vehicleYear.value) : estimateInfo.vehicleYear
+    estimateDialog.value = true
+}
+
+function onLogoChange(e) {
+    const file = e?.target?.files?.[0] || (Array.isArray(e) ? e[0] : e)
+    if (!file) {
+        estimateInfo.companyLogo = ''
+        return
+    }
+    const reader = new FileReader()
+    reader.onload = evt => {
+        estimateInfo.companyLogo = evt.target.result
+    }
+    reader.readAsDataURL(file)
+}
+
+function generateEstimatePdf() {
+    if (!results.value) return
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+    const pageWidth = doc.internal.pageSize.getWidth()
+    let y = 40
+    if (estimateInfo.companyLogo) {
+        const format = estimateInfo.companyLogo.startsWith('data:image/png') ? 'PNG' : 'JPEG'
+        try { doc.addImage(estimateInfo.companyLogo, format, 40, y, 60, 60) } catch (e) { }
+    }
+    let textX = estimateInfo.companyLogo ? 110 : 40
+    doc.setFontSize(12)
+    let ty = y + 15
+    if (estimateInfo.companyName) { doc.text(estimateInfo.companyName, textX, ty); ty += 15 }
+    if (estimateInfo.companyAddress) { doc.text(estimateInfo.companyAddress, textX, ty); ty += 15 }
+    if (estimateInfo.companyPhone) { doc.text(estimateInfo.companyPhone, textX, ty); ty += 15 }
+    doc.text(new Date().toLocaleDateString(), pageWidth - 40, 40, { align: 'right' })
+    y = 120
+    doc.setFontSize(18)
+    doc.text('Motor Vehicle Tax Estimate', pageWidth / 2, y, { align: 'center' })
+    y += 30
+    doc.setFontSize(12)
+    const customerName = [estimateInfo.customerFirstName, estimateInfo.customerLastName].filter(Boolean).join(' ')
+    if (customerName) { doc.text(`Customer: ${customerName}`, 40, y); y += 18 }
+    const vehicleLine = [estimateInfo.vehicleYear, estimateInfo.vehicleMake, estimateInfo.vehicleModel].filter(Boolean).join(' ')
+    if (vehicleLine) { doc.text(`Vehicle: ${vehicleLine}`, 40, y); y += 18 }
+    y += 10
+    const cifStr = formatCurrency(results.value.cifValue)
+    const taxStr = formatCurrency(results.value.totalTax)
+    const totalStr = formatCurrency(results.value.totalPrice)
+    doc.setFontSize(16)
+    const rowY = y + 30
+    doc.text(`CIF ${cifStr}`, pageWidth / 6, rowY, { align: 'center' })
+    doc.text(`Taxes ${taxStr}`, pageWidth / 2, rowY, { align: 'center' })
+    doc.text(`Total ${totalStr}`, pageWidth * 5 / 6, rowY, { align: 'center' })
+    y = rowY + 40
+    doc.setFontSize(12)
+    doc.text(`Customs Duty: ${formatCurrency(results.value.duty)}`, 40, y); y += 16
+    doc.text(`Excise Tax: ${formatCurrency(results.value.excise)}`, 40, y); y += 16
+    doc.text(`VAT: ${formatCurrency(results.value.vat)}`, 40, y); y += 16
+    doc.text(`Processing Fee: ${formatCurrency(results.value.processingFee)}`, 40, y); y += 16
+    doc.text(`Total Tax Payable: ${taxStr}`, 40, y); y += 16
+    doc.text(`Final Cost: ${totalStr}`, 40, y)
+    doc.save('estimate.pdf')
+    estimateDialog.value = false
+}
 
 function fitText(el) {
     if (!el || !el.parentElement) return
@@ -227,8 +342,14 @@ watch(results, () => {
     nextTick(updateStatSizes)
 })
 
+watch(estimateInfo, () => {
+    localStorage.setItem('estimateInfo', JSON.stringify(estimateInfo))
+}, { deep: true })
+
 onMounted(() => {
     window.addEventListener('resize', updateStatSizes)
+    const saved = localStorage.getItem('estimateInfo')
+    if (saved) Object.assign(estimateInfo, JSON.parse(saved))
 })
 
 onBeforeUnmount(() => {
