@@ -287,6 +287,23 @@ async function generateEstimatePdf() {
         if (align === 'right') drawX = x - textWidth
         page.drawText(text, { x: drawX, y, size, font: f, color })
     }
+    const wrapText = (text, maxWidth, size) => {
+        const words = text.split(' ')
+        const lines = []
+        let line = ''
+        words.forEach(word => {
+            const test = line ? `${line} ${word}` : word
+            const width = font.widthOfTextAtSize(test, size)
+            if (width > maxWidth && line) {
+                lines.push(line)
+                line = word
+            } else {
+                line = test
+            }
+        })
+        if (line) lines.push(line)
+        return lines
+    }
     const margin = 40
     let y = height - margin
 
@@ -335,8 +352,14 @@ async function generateEstimatePdf() {
     vehicleItems.forEach(item => {
         if (item[1]) {
             drawText(item[0], margin, y)
-            drawText(item[1], margin + 160, y)
-            y -= 16
+            drawText(item[1], width - margin, y, 12, { align: 'right' })
+            page.drawLine({
+                start: { x: margin, y: y - 4 },
+                end: { x: width - margin, y: y - 4 },
+                color: rgb(0.8, 0.8, 0.8),
+                dashArray: [3]
+            })
+            y -= 20
         }
     })
 
@@ -379,7 +402,11 @@ async function generateEstimatePdf() {
     })
 
     const disclaimer = 'This estimate is for guidance only. Taxes are computed as customs duty, excise, VAT and a $1,000 processing fee applied to your CIF value.'
-    drawText(disclaimer, width / 2, 60, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) })
+    const disclaimerLines = wrapText(disclaimer, width - margin * 2, 10)
+    let disclaimerY = margin + (disclaimerLines.length - 1) * 12
+    disclaimerLines.forEach((line, i) => {
+        drawText(line, width / 2, disclaimerY - i * 12, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) })
+    })
     const pdfBytes = await pdfDoc.save()
     const blob = new Blob([pdfBytes], { type: 'application/pdf' })
     const link = document.createElement('a')
