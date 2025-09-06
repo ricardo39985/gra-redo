@@ -667,13 +667,15 @@ function calculateGasoline() {
     } else { // over4
         duty = 0;
         vat = 0;
-        if (cc.value <= 1500) {
+        if (cc.value <= 1000) {
             excise = 800000; // This is in GYD
             totalTax = excise;
         } else {
-            if (cc.value <= 2000) { excise = (cif.value + 8200) * 0.30 + 8200; }
+            if (cc.value <= 1500) { excise = (cif.value + 6500) * 0.30 + 6000; }
+            else if (cc.value <= 1800) { excise = (cif.value + 6500) * 0.70 + 6500; }
+            else if (cc.value <= 2000) { excise = (cif.value + 13500) * 0.70 + 13500; }
             else if (cc.value <= 3000) { excise = (cif.value + 13500) * 0.70 + 13500; }
-            else { excise = (cif.value + 14500) * 1.00 + 14500; }
+            else { excise = (cif.value + 14500) * 0.70 + 14500; }
             totalTax = excise * exchange_rate.value;
         }
     }
