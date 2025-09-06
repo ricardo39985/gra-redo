@@ -172,6 +172,7 @@
                                         <v-label class="font-weight-bold mb-1 d-block">Company Details</v-label>
                                         <v-text-field v-model="estimateInfo.companyName" label="Name"></v-text-field>
                                         <v-text-field v-model="estimateInfo.companyAddress" label="Address"></v-text-field>
+                                        <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email"></v-text-field>
                                         <v-text-field v-model="estimateInfo.companyPhone" label="Phone"></v-text-field>
                                         <v-file-input label="Logo" accept="image/*" @change="onLogoChange"></v-file-input>
                                     </v-form>
@@ -246,6 +247,7 @@ const estimateInfo = reactive({
     customerPhone: '',
     companyName: '',
     companyAddress: '',
+    companyEmail: '',
     companyPhone: '',
     companyLogo: ''
 })
@@ -321,6 +323,7 @@ async function generateEstimatePdf() {
     let infoY = y - 15
     if (estimateInfo.companyName) { drawText(estimateInfo.companyName, infoX, infoY, 12, { font: fontBold }); infoY -= 14 }
     if (estimateInfo.companyAddress) { drawText(estimateInfo.companyAddress, infoX, infoY); infoY -= 14 }
+    if (estimateInfo.companyEmail) { drawText(estimateInfo.companyEmail, infoX, infoY); infoY -= 14 }
     if (estimateInfo.companyPhone) { drawText(estimateInfo.companyPhone, infoX, infoY); infoY -= 14 }
 
     drawText(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, width - margin, y - 15, 12, { align: 'right' })
@@ -363,7 +366,7 @@ async function generateEstimatePdf() {
         }
     })
 
-    drawText('Values shown in GYD.', width - margin, y + 10, 10, { align: 'right', color: rgb(0.4, 0.4, 0.4) })
+    drawText('Values shown in GYD.', width - margin, y, 10, { align: 'right', color: rgb(0.4, 0.4, 0.4) })
 
     y -= 30
     const glanceHeight = 60
@@ -398,7 +401,13 @@ async function generateEstimatePdf() {
         let color = idx === 6 ? rgb(0.0, 0.5, 0.3) : rgb(0, 0, 0)
         drawText(item[0], margin, y, 12, { font: f, color })
         drawText(item[1], width - margin, y, 12, { align: 'right', font: f, color })
-        y -= 16
+        page.drawLine({
+            start: { x: margin, y: y - 4 },
+            end: { x: width - margin, y: y - 4 },
+            color: rgb(0.8, 0.8, 0.8),
+            dashArray: [3]
+        })
+        y -= 20
     })
 
     const disclaimer = 'This estimate is for guidance only. Taxes are computed as customs duty, excise, VAT and a $1,000 processing fee applied to your CIF value.'
@@ -451,10 +460,34 @@ watch(estimateInfo, () => {
     localStorage.setItem('estimateInfo', JSON.stringify(estimateInfo))
 }, { deep: true })
 
+watch([fuel, vehicle_type, vehicleYear, plate, cc, cif, exchange_rate], () => {
+    const data = {
+        fuel: fuel.value,
+        vehicle_type: vehicle_type.value,
+        vehicleYear: vehicleYear.value,
+        plate: plate.value,
+        cc: cc.value,
+        cif: cif.value,
+        exchange_rate: exchange_rate.value
+    }
+    localStorage.setItem('calcInputs', JSON.stringify(data))
+})
+
 onMounted(() => {
     window.addEventListener('resize', updateStatSizes)
-    const saved = localStorage.getItem('estimateInfo')
-    if (saved) Object.assign(estimateInfo, JSON.parse(saved))
+    const savedEstimate = localStorage.getItem('estimateInfo')
+    if (savedEstimate) Object.assign(estimateInfo, JSON.parse(savedEstimate))
+    const savedCalc = localStorage.getItem('calcInputs')
+    if (savedCalc) {
+        const parsed = JSON.parse(savedCalc)
+        fuel.value = parsed.fuel ?? fuel.value
+        vehicle_type.value = parsed.vehicle_type ?? vehicle_type.value
+        vehicleYear.value = parsed.vehicleYear ?? vehicleYear.value
+        plate.value = parsed.plate ?? plate.value
+        cc.value = parsed.cc ?? cc.value
+        cif.value = parsed.cif ?? cif.value
+        exchange_rate.value = parsed.exchange_rate ?? exchange_rate.value
+    }
 })
 
 onBeforeUnmount(() => {
