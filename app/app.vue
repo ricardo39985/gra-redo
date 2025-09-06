@@ -72,7 +72,7 @@
                             </v-card-actions>
                         </v-card>
 
-                        <v-card v-if="results" class="mt-8 pa-6 results-card" variant="tonal" color="primary"
+                        <v-card v-if="results" class="mt-8 pa-2 results-card" variant="tonal" color="primary"
                             rounded="xl">
                             <v-card-title class="font-weight-bold text-center text-h5">Calculation
                                 Results</v-card-title>
