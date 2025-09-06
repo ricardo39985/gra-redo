@@ -158,32 +158,43 @@
                         </v-window-item>
                         <v-window-item value="estimate">
                           <v-card class="pa-4" rounded="xl">
-                            <v-form>
-                              <v-label class="font-weight-bold mb-1 d-block">Vehicle Details</v-label>
-                              <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number"></v-text-field>
-                              <v-text-field v-model="estimateInfo.vehicleMake" label="Make"></v-text-field>
-                              <v-text-field v-model="estimateInfo.vehicleModel" label="Model"></v-text-field>
-                              <v-divider class="my-4"></v-divider>
-                              <v-label class="font-weight-bold mb-1 d-block">Customer Details</v-label>
-                              <v-text-field v-model="estimateInfo.customerFirstName" label="First Name"></v-text-field>
-                              <v-text-field v-model="estimateInfo.customerLastName" label="Last Name"></v-text-field>
-                              <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email"></v-text-field>
-                              <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel"></v-text-field>
-                              <v-divider class="my-4"></v-divider>
-                              <v-label class="font-weight-bold mb-1 d-block">Company Details</v-label>
-                              <v-text-field v-model="estimateInfo.companyName" label="Name"></v-text-field>
-                              <v-text-field v-model="estimateInfo.companyAddress" label="Address"></v-text-field>
-                              <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email"></v-text-field>
-                              <v-text-field v-model="estimateInfo.companyPhone" label="Phone"></v-text-field>
-                              <v-file-input label="Logo" accept="image/*" @change="onLogoChange"></v-file-input>
-                              <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-2" max-height="100" contain></v-img>
-                            </v-form>
-                            <div v-if="pdfPreviewUrl" class="mt-4">
-                              <iframe :src="pdfPreviewSrc" width="100%" height="600" style="border: none;"></iframe>
-                            </div>
-                            <div class="text-center mt-4">
-                              <v-btn color="primary" @click="downloadEstimatePdf" :disabled="!pdfPreviewUrl">Download PDF</v-btn>
-                            </div>
+                            <v-row dense>
+                              <v-col cols="12" md="5">
+                                <v-form class="ios-form">
+                                  <v-sheet class="ios-section mb-6" rounded="xl" elevation="0">
+                                    <v-label class="font-weight-bold d-block mb-2">Vehicle Details</v-label>
+                                    <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number" variant="solo" density="comfortable"></v-text-field>
+                                    <v-text-field v-model="estimateInfo.vehicleMake" label="Make" variant="solo" density="comfortable"></v-text-field>
+                                    <v-text-field v-model="estimateInfo.vehicleModel" label="Model" variant="solo" density="comfortable"></v-text-field>
+                                  </v-sheet>
+                                  <v-sheet class="ios-section mb-6" rounded="xl" elevation="0">
+                                    <v-label class="font-weight-bold d-block mb-2">Customer Details</v-label>
+                                    <v-text-field v-model="estimateInfo.customerFirstName" label="First Name" variant="solo" density="comfortable"></v-text-field>
+                                    <v-text-field v-model="estimateInfo.customerLastName" label="Last Name" variant="solo" density="comfortable"></v-text-field>
+                                    <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email" variant="solo" density="comfortable"></v-text-field>
+                                    <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel" variant="solo" density="comfortable"></v-text-field>
+                                  </v-sheet>
+                                  <v-sheet class="ios-section" rounded="xl" elevation="0">
+                                    <v-label class="font-weight-bold d-block mb-2">Company Details</v-label>
+                                    <v-text-field v-model="estimateInfo.companyName" label="Name" variant="solo" density="comfortable"></v-text-field>
+                                    <v-text-field v-model="estimateInfo.companyAddress" label="Address" variant="solo" density="comfortable"></v-text-field>
+                                    <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email" variant="solo" density="comfortable"></v-text-field>
+                                    <v-text-field v-model="estimateInfo.companyPhone" label="Phone" variant="solo" density="comfortable"></v-text-field>
+                                    <v-file-input label="Logo" accept="image/*" @change="onLogoChange" variant="solo" density="comfortable"></v-file-input>
+                                    <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-2" max-height="100" contain></v-img>
+                                  </v-sheet>
+                                </v-form>
+                              </v-col>
+                              <v-col cols="12" md="7" class="d-flex flex-column">
+                                <v-sheet class="ios-section flex-grow-1 d-flex" rounded="xl" elevation="0" style="min-height:600px;">
+                                  <iframe v-if="pdfPreviewUrl" :src="pdfPreviewSrc" class="flex-grow-1 rounded-xl" style="border: none;" height="100%"></iframe>
+                                  <div v-else class="d-flex align-center justify-center flex-grow-1 text-medium-emphasis">Preview will appear here</div>
+                                </v-sheet>
+                                <div class="text-center mt-4">
+                                  <v-btn color="primary" @click="downloadEstimatePdf" :disabled="!pdfPreviewUrl">Download PDF</v-btn>
+                                </div>
+                              </v-col>
+                            </v-row>
                           </v-card>
                         </v-window-item>
                       </v-window>
@@ -774,6 +785,16 @@ useHead({
 .tax-breakdown .v-list-item .v-icon,
 .tax-breakdown .v-list-item span {
     color: rgba(var(--v-theme-on-surface), 0.87) !important;
+}
+
+.ios-section {
+    background-color: rgb(var(--v-theme-surface));
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+    padding: 1rem;
+}
+
+.ios-form .v-field {
+    border-radius: 0.75rem;
 }
 
 </style>
