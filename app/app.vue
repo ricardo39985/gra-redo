@@ -96,134 +96,166 @@
                             </v-tabs>
                             <v-window v-model="activeTab" class="mt-4">
                                 <v-window-item value="results">
-                                    <v-card class="pa-0 results-card" variant="tonal" color="primary"
-                                        rounded="xl">
+                                    <v-card class="pa-0 results-card" variant="tonal" color="primary" rounded="xl">
                                         <v-card-title class="font-weight-bold text-center text-h5">Calculation
                                             Results</v-card-title>
-                            <v-card-text>
-                                <v-row class="mb-4" justify="center">
-                                    <v-col cols="12" md="4">
-                                        <v-sheet class="stat-card text-center" rounded="lg">
-                                            <div class="stat-title">CIF Value</div>
-                                            <div class="stat-value" ref="cifRef"
-                                                :title="results.cifValue.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
-                                                {{ results.cifValue.toLocaleString('en-US', {
-                                                    style: 'currency', currency: 'GYD'
-                                                }) }}</div>
-                                        </v-sheet>
-                                    </v-col>
-                                    <v-col cols="12" md="4">
-                                        <v-sheet class="stat-card text-center" rounded="lg">
-                                            <div class="stat-title">Total Tax</div>
-                                            <div class="stat-value" ref="taxRef"
-                                                :title="results.totalTax.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
-                                                {{ results.totalTax.toLocaleString('en-US', {
-                                                    style: 'currency', currency: 'GYD'
-                                                }) }}</div>
-                                        </v-sheet>
-                                    </v-col>
-                                    <v-col cols="12" md="4">
-                                        <v-sheet class="stat-card text-center" rounded="lg">
-                                            <div class="stat-title">Total Cost</div>
-                                            <div class="stat-value" ref="totalRef"
-                                                :title="results.totalPrice.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
-                                                {{ results.totalPrice.toLocaleString('en-US', {
-                                                    style: 'currency', currency: 'GYD'
-                                                }) }}</div>
-                                        </v-sheet>
-                                    </v-col>
-                                </v-row>
-                                <v-divider class="my-4"></v-divider>
-                                <v-list class="bg-transparent tax-breakdown" lines="one">
-                                    <v-list-item prepend-icon="mdi-percent-outline">
-                                        <v-list-item-title>Customs Duty</v-list-item-title>
-                                        <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.duty.toLocaleString('en-US', {
-                                                style: 'currency', currency: 'GYD'
-                                            }) }}</span>
-                                        </template>
-                                    </v-list-item>
-                                    <v-list-item prepend-icon="mdi-percent-outline">
-                                        <v-list-item-title>Excise Tax</v-list-item-title>
-                                        <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.excise.toLocaleString('en-US', {
-                                                style: 'currency', currency: 'GYD'
-                                            }) }}</span>
-                                        </template>
-                                    </v-list-item>
-                                    <v-list-item prepend-icon="mdi-percent-outline">
-                                        <v-list-item-title>VAT (14%)</v-list-item-title>
-                                        <template v-slot:append>
-                                            <span class="font-weight-medium">{{ results.vat.toLocaleString('en-US', {
-                                                style: 'currency', currency: 'GYD'
-                                            }) }}</span>
-                                        </template>
-                                    </v-list-item>
-                                    <v-divider class="my-2"></v-divider>
-                                    <v-list-item prepend-icon="mdi-cog-outline">
-                                        <v-list-item-title>Processing Fee</v-list-item-title>
-                                        <template v-slot:append>
-                                            <span class="font-weight-medium">{{
-                                                results.processingFee.toLocaleString('en-US', {
-                                                    style: 'currency', currency: 'GYD'
-                                                }) }}</span>
-                                        </template>
-                                    </v-list-item>
-                                </v-list>
-                        </v-card-text>
-                          </v-card>
-                        </v-window-item>
-                        <v-window-item value="estimate">
-                          <v-card class="pa-4" rounded="xl">
-                            <v-row dense>
-                              <v-col cols="12" md="5">
-                                <v-form>
-                                  <v-card class="mb-6" variant="tonal" rounded="lg">
-                                    <v-card-title class="text-subtitle-1 font-weight-bold">Vehicle Details</v-card-title>
-                                    <v-card-text>
-                                      <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number" variant="outlined"></v-text-field>
-                                      <v-text-field v-model="estimateInfo.vehicleMake" label="Make" variant="outlined"></v-text-field>
-                                      <v-text-field v-model="estimateInfo.vehicleModel" label="Model" variant="outlined"></v-text-field>
-                                    </v-card-text>
-                                  </v-card>
-                                  <v-card class="mb-6" variant="tonal" rounded="lg">
-                                    <v-card-title class="text-subtitle-1 font-weight-bold">Customer Details</v-card-title>
-                                    <v-card-text>
-                                      <v-text-field v-model="estimateInfo.customerFirstName" label="First Name" variant="outlined"></v-text-field>
-                                      <v-text-field v-model="estimateInfo.customerLastName" label="Last Name" variant="outlined"></v-text-field>
-                                      <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email" variant="outlined"></v-text-field>
-                                      <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel" variant="outlined"></v-text-field>
-                                    </v-card-text>
-                                  </v-card>
-                                  <v-card variant="tonal" rounded="lg">
-                                    <v-card-title class="text-subtitle-1 font-weight-bold">Company Details</v-card-title>
-                                    <v-card-text>
-                                      <v-text-field v-model="estimateInfo.companyName" label="Name" variant="outlined"></v-text-field>
-                                      <v-text-field v-model="estimateInfo.companyAddress" label="Address" variant="outlined"></v-text-field>
-                                      <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email" variant="outlined"></v-text-field>
-                                      <v-text-field v-model="estimateInfo.companyPhone" label="Phone" variant="outlined"></v-text-field>
-                                      <v-file-input label="Logo" accept="image/*" @change="onLogoChange" variant="outlined"></v-file-input>
-                                      <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-2" max-height="100" contain></v-img>
-                                    </v-card-text>
-                                  </v-card>
-                                </v-form>
-                              </v-col>
-                              <v-col cols="12" md="7" class="d-flex flex-column">
-                                <v-sheet class="flex-grow-1 d-flex" rounded="xl" color="surface" style="min-height:600px;">
-                                  <iframe v-if="pdfPreviewUrl" :src="pdfPreviewSrc" class="flex-grow-1 rounded-xl" style="border: none;" height="100%"></iframe>
-                                  <div v-else class="d-flex align-center justify-center flex-grow-1 text-medium-emphasis">Preview will appear here</div>
-                                </v-sheet>
-                                <div class="text-center mt-4">
-                                  <v-btn size="large" color="primary" prepend-icon="mdi-download" class="w-100" @click="downloadEstimatePdf" :disabled="!pdfPreviewUrl">Download PDF</v-btn>
-                                </div>
-                              </v-col>
-                            </v-row>
-                          </v-card>
-                        </v-window-item>
-                      </v-window>
-                    </div>
+                                        <v-card-text>
+                                            <v-row class="mb-4" justify="center">
+                                                <v-col cols="12" md="4">
+                                                    <v-sheet class="stat-card text-center" rounded="lg">
+                                                        <div class="stat-title">CIF Value</div>
+                                                        <div class="stat-value" ref="cifRef"
+                                                            :title="results.cifValue.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                            {{ results.cifValue.toLocaleString('en-US', {
+                                                                style: 'currency', currency: 'GYD'
+                                                            }) }}</div>
+                                                    </v-sheet>
+                                                </v-col>
+                                                <v-col cols="12" md="4">
+                                                    <v-sheet class="stat-card text-center" rounded="lg">
+                                                        <div class="stat-title">Total Tax</div>
+                                                        <div class="stat-value" ref="taxRef"
+                                                            :title="results.totalTax.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                            {{ results.totalTax.toLocaleString('en-US', {
+                                                                style: 'currency', currency: 'GYD'
+                                                            }) }}</div>
+                                                    </v-sheet>
+                                                </v-col>
+                                                <v-col cols="12" md="4">
+                                                    <v-sheet class="stat-card text-center" rounded="lg">
+                                                        <div class="stat-title">Total Cost</div>
+                                                        <div class="stat-value" ref="totalRef"
+                                                            :title="results.totalPrice.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
+                                                            {{ results.totalPrice.toLocaleString('en-US', {
+                                                                style: 'currency', currency: 'GYD'
+                                                            }) }}</div>
+                                                    </v-sheet>
+                                                </v-col>
+                                            </v-row>
+                                            <v-divider class="my-4"></v-divider>
+                                            <v-list class="bg-transparent tax-breakdown" lines="one">
+                                                <v-list-item prepend-icon="mdi-percent-outline">
+                                                    <v-list-item-title>Customs Duty</v-list-item-title>
+                                                    <template v-slot:append>
+                                                        <span class="font-weight-medium">{{
+                                                            results.duty.toLocaleString('en-US', {
+                                                                style: 'currency', currency: 'GYD'
+                                                            }) }}</span>
+                                                    </template>
+                                                </v-list-item>
+                                                <v-list-item prepend-icon="mdi-percent-outline">
+                                                    <v-list-item-title>Excise Tax</v-list-item-title>
+                                                    <template v-slot:append>
+                                                        <span class="font-weight-medium">{{
+                                                            results.excise.toLocaleString('en-US', {
+                                                                style: 'currency', currency: 'GYD'
+                                                            }) }}</span>
+                                                    </template>
+                                                </v-list-item>
+                                                <v-list-item prepend-icon="mdi-percent-outline">
+                                                    <v-list-item-title>VAT (14%)</v-list-item-title>
+                                                    <template v-slot:append>
+                                                        <span class="font-weight-medium">{{
+                                                            results.vat.toLocaleString('en-US', {
+                                                                style: 'currency', currency: 'GYD'
+                                                            }) }}</span>
+                                                    </template>
+                                                </v-list-item>
+                                                <v-divider class="my-2"></v-divider>
+                                                <v-list-item prepend-icon="mdi-cog-outline">
+                                                    <v-list-item-title>Processing Fee</v-list-item-title>
+                                                    <template v-slot:append>
+                                                        <span class="font-weight-medium">{{
+                                                            results.processingFee.toLocaleString('en-US', {
+                                                                style: 'currency', currency: 'GYD'
+                                                            }) }}</span>
+                                                    </template>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-card-text>
+                                    </v-card>
+                                </v-window-item>
+                                <v-window-item value="estimate">
+                                    <v-card class="pa-4" rounded="xl">
+                                        <v-row dense>
+                                            <v-col cols="12" md="5">
+                                                <v-form>
+                                                    <v-card class="mb-6" variant="tonal" rounded="lg">
+                                                        <v-card-title class="text-subtitle-1 font-weight-bold">Vehicle
+                                                            Details</v-card-title>
+                                                        <v-card-text>
+                                                            <v-text-field v-model="estimateInfo.vehicleYear"
+                                                                label="Year" type="number"
+                                                                variant="outlined"></v-text-field>
+                                                            <v-text-field v-model="estimateInfo.vehicleMake"
+                                                                label="Make" variant="outlined"></v-text-field>
+                                                            <v-text-field v-model="estimateInfo.vehicleModel"
+                                                                label="Model" variant="outlined"></v-text-field>
+                                                        </v-card-text>
+                                                    </v-card>
+                                                    <v-card class="mb-6" variant="tonal" rounded="lg">
+                                                        <v-card-title class="text-subtitle-1 font-weight-bold">Customer
+                                                            Details</v-card-title>
+                                                        <v-card-text>
+                                                            <v-text-field v-model="estimateInfo.customerFirstName"
+                                                                label="First Name" variant="outlined"></v-text-field>
+                                                            <v-text-field v-model="estimateInfo.customerLastName"
+                                                                label="Last Name" variant="outlined"></v-text-field>
+                                                            <v-text-field v-model="estimateInfo.customerEmail"
+                                                                label="Email" type="email"
+                                                                variant="outlined"></v-text-field>
+                                                            <v-text-field v-model="estimateInfo.customerPhone"
+                                                                label="Phone" type="tel"
+                                                                variant="outlined"></v-text-field>
+                                                        </v-card-text>
+                                                    </v-card>
+                                                    <v-card variant="tonal" rounded="lg">
+                                                        <v-card-title class="text-subtitle-1 font-weight-bold">Company
+                                                            Details</v-card-title>
+                                                        <v-card-text>
+                                                            <v-text-field v-model="estimateInfo.companyName"
+                                                                label="Name" variant="outlined"></v-text-field>
+                                                            <v-text-field v-model="estimateInfo.companyAddress"
+                                                                label="Address" variant="outlined"></v-text-field>
+                                                            <v-text-field v-model="estimateInfo.companyEmail"
+                                                                label="Email" type="email"
+                                                                variant="outlined"></v-text-field>
+                                                            <v-text-field v-model="estimateInfo.companyPhone"
+                                                                label="Phone" variant="outlined"></v-text-field>
+                                                            <v-file-input label="Logo" accept="image/*"
+                                                                @change="onLogoChange"
+                                                                variant="outlined"></v-file-input>
+                                                            <v-img v-if="estimateInfo.companyLogo"
+                                                                :src="estimateInfo.companyLogo" class="mt-2"
+                                                                max-height="100" contain></v-img>
+                                                        </v-card-text>
+                                                    </v-card>
+                                                </v-form>
+                                            </v-col>
+                                            <v-col cols="12" md="7" class="d-flex flex-column">
+                                                <v-sheet class="flex-grow-1 d-flex" rounded="xl" color="surface"
+                                                    style="min-height:600px;">
+                                                    <iframe v-if="pdfPreviewUrl" :src="pdfPreviewSrc"
+                                                        class="flex-grow-1 rounded-xl" style="border: none;"
+                                                        height="100%"></iframe>
+                                                    <div v-else
+                                                        class="d-flex align-center justify-center flex-grow-1 text-medium-emphasis">
+                                                        Preview will
+                                                        appear here</div>
+                                                </v-sheet>
+                                                <div class="text-center mt-4">
+                                                    <v-btn size="large" color="primary" prepend-icon="mdi-download"
+                                                        class="w-100" @click="downloadEstimatePdf"
+                                                        :disabled="!pdfPreviewUrl">Download PDF</v-btn>
+                                                </div>
+                                            </v-col>
+                                        </v-row>
+                                    </v-card>
+                                </v-window-item>
+                            </v-window>
+                        </div>
 
-                          <footer class="text-center text-caption text-medium-emphasis py-8">
+                        <footer class="text-center text-caption text-medium-emphasis py-8">
                             <p>
                                 This calculator is not affiliated with or endorsed by the
                                 <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
@@ -232,8 +264,8 @@
                                 Always verify information on the official site.
                             </p>
                             <p class="mt-2">
-                                Built by <a href="https://www.facebook.com/ricardo.persaud.397/" target="_blank"
-                                    rel="noopener" class="text-primary">Ricardo
+                                Built by <a href="https://wa.me/5927366642" target="_blank" rel="noopener"
+                                    class="text-primary">Ricardo
                                     Persaud</a>.
                             </p>
                         </footer>
@@ -846,5 +878,4 @@ useHead({
 .tax-breakdown .v-list-item span {
     color: rgba(var(--v-theme-on-surface), 0.87) !important;
 }
-
 </style>
