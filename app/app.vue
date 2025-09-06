@@ -160,38 +160,44 @@
                           <v-card class="pa-4" rounded="xl">
                             <v-row dense>
                               <v-col cols="12" md="5">
-                                <v-form class="ios-form">
-                                  <v-sheet class="ios-section mb-6" rounded="xl" elevation="0">
-                                    <v-label class="font-weight-bold d-block mb-2">Vehicle Details</v-label>
-                                    <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number" variant="solo" density="comfortable"></v-text-field>
-                                    <v-text-field v-model="estimateInfo.vehicleMake" label="Make" variant="solo" density="comfortable"></v-text-field>
-                                    <v-text-field v-model="estimateInfo.vehicleModel" label="Model" variant="solo" density="comfortable"></v-text-field>
-                                  </v-sheet>
-                                  <v-sheet class="ios-section mb-6" rounded="xl" elevation="0">
-                                    <v-label class="font-weight-bold d-block mb-2">Customer Details</v-label>
-                                    <v-text-field v-model="estimateInfo.customerFirstName" label="First Name" variant="solo" density="comfortable"></v-text-field>
-                                    <v-text-field v-model="estimateInfo.customerLastName" label="Last Name" variant="solo" density="comfortable"></v-text-field>
-                                    <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email" variant="solo" density="comfortable"></v-text-field>
-                                    <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel" variant="solo" density="comfortable"></v-text-field>
-                                  </v-sheet>
-                                  <v-sheet class="ios-section" rounded="xl" elevation="0">
-                                    <v-label class="font-weight-bold d-block mb-2">Company Details</v-label>
-                                    <v-text-field v-model="estimateInfo.companyName" label="Name" variant="solo" density="comfortable"></v-text-field>
-                                    <v-text-field v-model="estimateInfo.companyAddress" label="Address" variant="solo" density="comfortable"></v-text-field>
-                                    <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email" variant="solo" density="comfortable"></v-text-field>
-                                    <v-text-field v-model="estimateInfo.companyPhone" label="Phone" variant="solo" density="comfortable"></v-text-field>
-                                    <v-file-input label="Logo" accept="image/*" @change="onLogoChange" variant="solo" density="comfortable"></v-file-input>
-                                    <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-2" max-height="100" contain></v-img>
-                                  </v-sheet>
+                                <v-form>
+                                  <v-card class="mb-6" variant="tonal" rounded="lg">
+                                    <v-card-title class="text-subtitle-1 font-weight-bold">Vehicle Details</v-card-title>
+                                    <v-card-text>
+                                      <v-text-field v-model="estimateInfo.vehicleYear" label="Year" type="number" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.vehicleMake" label="Make" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.vehicleModel" label="Model" variant="outlined"></v-text-field>
+                                    </v-card-text>
+                                  </v-card>
+                                  <v-card class="mb-6" variant="tonal" rounded="lg">
+                                    <v-card-title class="text-subtitle-1 font-weight-bold">Customer Details</v-card-title>
+                                    <v-card-text>
+                                      <v-text-field v-model="estimateInfo.customerFirstName" label="First Name" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.customerLastName" label="Last Name" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.customerEmail" label="Email" type="email" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.customerPhone" label="Phone" type="tel" variant="outlined"></v-text-field>
+                                    </v-card-text>
+                                  </v-card>
+                                  <v-card variant="tonal" rounded="lg">
+                                    <v-card-title class="text-subtitle-1 font-weight-bold">Company Details</v-card-title>
+                                    <v-card-text>
+                                      <v-text-field v-model="estimateInfo.companyName" label="Name" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.companyAddress" label="Address" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.companyEmail" label="Email" type="email" variant="outlined"></v-text-field>
+                                      <v-text-field v-model="estimateInfo.companyPhone" label="Phone" variant="outlined"></v-text-field>
+                                      <v-file-input label="Logo" accept="image/*" @change="onLogoChange" variant="outlined"></v-file-input>
+                                      <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-2" max-height="100" contain></v-img>
+                                    </v-card-text>
+                                  </v-card>
                                 </v-form>
                               </v-col>
                               <v-col cols="12" md="7" class="d-flex flex-column">
-                                <v-sheet class="ios-section flex-grow-1 d-flex" rounded="xl" elevation="0" style="min-height:600px;">
+                                <v-sheet class="flex-grow-1 d-flex" rounded="xl" color="surface" style="min-height:600px;">
                                   <iframe v-if="pdfPreviewUrl" :src="pdfPreviewSrc" class="flex-grow-1 rounded-xl" style="border: none;" height="100%"></iframe>
                                   <div v-else class="d-flex align-center justify-center flex-grow-1 text-medium-emphasis">Preview will appear here</div>
                                 </v-sheet>
                                 <div class="text-center mt-4">
-                                  <v-btn color="primary" @click="downloadEstimatePdf" :disabled="!pdfPreviewUrl">Download PDF</v-btn>
+                                  <v-btn size="large" color="primary" prepend-icon="mdi-download" class="w-100" @click="downloadEstimatePdf" :disabled="!pdfPreviewUrl">Download PDF</v-btn>
                                 </div>
                               </v-col>
                             </v-row>
@@ -327,10 +333,11 @@ async function generateEstimatePdf(download = false) {
 
     if (estimateInfo.companyLogo) {
         try {
-            const imgBytes = await fetch(estimateInfo.companyLogo).then(r => r.arrayBuffer())
-            const img = estimateInfo.companyLogo.startsWith('data:image/png')
-                ? await pdfDoc.embedPng(imgBytes)
-                : await pdfDoc.embedJpg(imgBytes)
+            const base64 = estimateInfo.companyLogo.split(',')[1]
+            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+            const img = estimateInfo.companyLogo.includes('image/png')
+                ? await pdfDoc.embedPng(bytes)
+                : await pdfDoc.embedJpg(bytes)
             page.drawImage(img, { x: margin, y: y - 60, width: 60, height: 60 })
         } catch (e) { }
     }
@@ -785,16 +792,6 @@ useHead({
 .tax-breakdown .v-list-item .v-icon,
 .tax-breakdown .v-list-item span {
     color: rgba(var(--v-theme-on-surface), 0.87) !important;
-}
-
-.ios-section {
-    background-color: rgb(var(--v-theme-surface));
-    border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-    padding: 1rem;
-}
-
-.ios-form .v-field {
-    border-radius: 0.75rem;
 }
 
 </style>
