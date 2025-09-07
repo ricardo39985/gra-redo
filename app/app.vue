@@ -283,7 +283,7 @@ function acceptDisclaimer() {
 
 // Form state
 const cif = ref(null)
-const exchange_rate = ref(215) // Set a default exchange rate
+const exchange_rate = ref(208.5) // Set a default exchange rate
 const vehicleYear = ref(null)
 const cc = ref(null)
 const fuel = ref('Gasoline')
@@ -292,7 +292,7 @@ const plate = ref('P')
 
 const error = ref(null)
 const results = ref(null)
-const processingFee = 0 // GYD processing fee
+const processingFee = 1000 // GYD processing fee
 
 const cifRef = ref(null)
 const taxRef = ref(null)
