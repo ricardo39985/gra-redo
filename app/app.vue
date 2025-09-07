@@ -5,6 +5,9 @@
                 GRA Tax Calculator
             </v-app-bar-title>
             <v-spacer></v-spacer>
+            <v-btn @click="toggleCurrency" variant="text" class="text-none" style="min-width: 80px;">
+                {{ displayCurrency }}
+            </v-btn>
             <v-btn icon @click="toggleTheme" variant="text">
                 <v-icon>{{ isDark ? 'mdi-weather-night' : 'mdi-weather-sunny' }}</v-icon>
             </v-btn>
@@ -105,30 +108,24 @@
                                                     <v-sheet class="stat-card text-center" rounded="lg">
                                                         <div class="stat-title">CIF Value</div>
                                                         <div class="stat-value" ref="cifRef"
-                                                            :title="results.cifValue.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
-                                                            {{ results.cifValue.toLocaleString('en-US', {
-                                                                style: 'currency', currency: 'GYD'
-                                                            }) }}</div>
+                                                            :title="formatCurrency(results.cifValue)">{{
+                                                            formatCurrency(results.cifValue) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                                 <v-col cols="12" md="4">
                                                     <v-sheet class="stat-card text-center" rounded="lg">
                                                         <div class="stat-title">Total Tax</div>
                                                         <div class="stat-value" ref="taxRef"
-                                                            :title="results.totalTax.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
-                                                            {{ results.totalTax.toLocaleString('en-US', {
-                                                                style: 'currency', currency: 'GYD'
-                                                            }) }}</div>
+                                                            :title="formatCurrency(results.totalTax)">{{
+                                                            formatCurrency(results.totalTax) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                                 <v-col cols="12" md="4">
                                                     <v-sheet class="stat-card text-center" rounded="lg">
                                                         <div class="stat-title">Total Cost</div>
                                                         <div class="stat-value" ref="totalRef"
-                                                            :title="results.totalPrice.toLocaleString('en-US', { style: 'currency', currency: 'GYD' })">
-                                                            {{ results.totalPrice.toLocaleString('en-US', {
-                                                                style: 'currency', currency: 'GYD'
-                                                            }) }}</div>
+                                                            :title="formatCurrency(results.totalPrice)">{{
+                                                            formatCurrency(results.totalPrice) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                             </v-row>
@@ -136,39 +133,26 @@
                                             <v-list class="bg-transparent tax-breakdown" lines="one">
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>Customs Duty</v-list-item-title>
-                                                    <template v-slot:append>
-                                                        <span class="font-weight-medium">{{
-                                                            results.duty.toLocaleString('en-US', {
-                                                                style: 'currency', currency: 'GYD'
-                                                            }) }}</span>
-                                                    </template>
+                                                    <template v-slot:append><span class="font-weight-medium">{{
+                                                            formatCurrency(results.duty) }}</span></template>
                                                 </v-list-item>
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>Excise Tax</v-list-item-title>
-                                                    <template v-slot:append>
-                                                        <span class="font-weight-medium">{{
-                                                            results.excise.toLocaleString('en-US', {
-                                                                style: 'currency', currency: 'GYD'
-                                                            }) }}</span>
-                                                    </template>
+                                                    <template v-slot:append><span class="font-weight-medium">{{
+                                                            formatCurrency(results.excise) }}</span></template>
                                                 </v-list-item>
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>VAT (14%)</v-list-item-title>
-                                                    <template v-slot:append>
-                                                        <span class="font-weight-medium">{{
-                                                            results.vat.toLocaleString('en-US', {
-                                                                style: 'currency', currency: 'GYD'
-                                                            }) }}</span>
-                                                    </template>
+                                                    <template v-slot:append><span class="font-weight-medium">{{
+                                                            formatCurrency(results.vat) }}</span></template>
                                                 </v-list-item>
                                                 <v-divider class="my-2"></v-divider>
                                                 <v-list-item prepend-icon="mdi-cog-outline">
                                                     <v-list-item-title>Processing Fee</v-list-item-title>
                                                     <template v-slot:append>
                                                         <span class="font-weight-medium">{{
-                                                            results.processingFee.toLocaleString('en-US', {
-                                                                style: 'currency', currency: 'GYD'
-                                                            }) }}</span>
+                                                            formatCurrency(results.processingFee)
+                                                            }}</span>
                                                     </template>
                                                 </v-list-item>
                                             </v-list>
@@ -334,12 +318,22 @@ const estimateInfo = reactive({
     companyPhone: '',
     companyLogo: ''
 })
+const displayCurrency = ref('GYD')
 
-function formatCurrency(val) {
-    return Number(val).toLocaleString('en-US', { style: 'currency', currency: 'GYD' })
+function toggleCurrency() {
+    displayCurrency.value = displayCurrency.value === 'GYD' ? 'USD' : 'GYD'
 }
 
+function formatCurrency(val) {
+    const currency = displayCurrency.value
+    const rate = currency === 'USD' ? exchange_rate.value : 1
+    const displayValue = val / rate
 
+    return displayValue.toLocaleString('en-US', {
+        style: 'currency',
+        currency: currency
+    })
+}
 function onLogoChange(e) {
     const file = e?.target?.files?.[0] || (Array.isArray(e) ? e[0] : e)
     if (!file) {
@@ -433,7 +427,7 @@ async function generateEstimatePdf(download = false) {
         ['Vehicle Model:', estimateInfo.vehicleModel || ''],
         ['Engine Capacity:', cc.value ? `${cc.value} ${fuel.value === 'Electric' ? 'KW' : 'CC'}` : ''],
         ['CIF Value:', formatCurrency(results.value.cifValue)],
-        ['Exchange Rate:', exchange_rate.value ? exchange_rate.value.toLocaleString('en-US', { style: 'currency', currency: 'GYD' }) : '']
+        ['Exchange Rate:', exchange_rate.value ? String(exchange_rate.value) : '']
     ]
     vehicleItems.forEach(item => {
         if (item[1]) {
@@ -449,7 +443,7 @@ async function generateEstimatePdf(download = false) {
         }
     })
 
-    drawText('Values shown in GYD.', width - margin, y, 10, { align: 'right', color: rgb(0.4, 0.4, 0.4) })
+    drawText(`Values shown in ${displayCurrency.value}.`, width - margin, y, 10, { align: 'right', color: rgb(0.4, 0.4, 0.4) })
 
     y -= 30
     const glanceHeight = 60
@@ -557,6 +551,11 @@ watch(results, () => {
     })
 })
 
+watch(displayCurrency, (newVal) => {
+    localStorage.setItem('displayCurrency', newVal)
+    nextTick(updateStatSizes)
+})
+
 watch(estimateInfo, () => {
     localStorage.setItem('estimateInfo', JSON.stringify(estimateInfo))
     if (results.value) generateEstimatePdf(false)
@@ -580,6 +579,13 @@ watch([fuel, vehicle_type, vehicleYear, plate, cc, cif, exchange_rate], () => {
         exchange_rate: exchange_rate.value
     }
     localStorage.setItem('calcInputs', JSON.stringify(data))
+})
+
+onMounted(() => {
+    const savedCurrency = localStorage.getItem('displayCurrency')
+    if (savedCurrency) {
+        displayCurrency.value = savedCurrency
+    }
 })
 
 onMounted(() => {
@@ -665,21 +671,15 @@ function resetForm() {
 }
 
 function calculateGasoline() {
-    let dutyRate = 0, exciseRate = 0, vatRate = 0;
+    let dutyRate = 0, exciseRate = 0, vatRate = 0.14;
     let duty = 0, excise = 0, vat = 0, totalTax = 0;
 
     if (vehicle_type.value === 'Bike') {
         dutyRate = 0.20;
-        vatRate = 0.14;
         if (cc.value > 175) {
             exciseRate = 0.10;
         }
-        duty = dutyRate * cif.value;
-        excise = exciseRate * (duty + cif.value);
-        vat = (cif.value + duty + excise) * vatRate;
-        totalTax = (duty + excise + vat) * exchange_rate.value;
     } else if (ageCategory.value === 'under4') {
-        vatRate = 0.14;
         if (cc.value <= 1500) {
             dutyRate = 0.35;
         } else if (cc.value <= 2000) {
@@ -692,42 +692,35 @@ function calculateGasoline() {
             dutyRate = 0.45;
             exciseRate = 1.40;
         }
-        duty = dutyRate * cif.value;
-        excise = exciseRate * (duty + cif.value);
-        vat = (cif.value + duty + excise) * vatRate;
-        totalTax = (duty + excise + vat) * exchange_rate.value;
     } else { // over4
-        duty = 0;
-        vat = 0;
-        if (cc.value <= 1000) {
-            excise = 800000; // This is in GYD
-            totalTax = excise;
-        } else if (cc.value <= 1500) {
-            excise = 800000; // GYD flat rate
-            totalTax = excise;
-        } else if (cc.value <= 1800) {
-            excise = (cif.value + 6000) * 0.30 + 6000;
-            totalTax = excise * exchange_rate.value;
-        } else if (cc.value <= 2000) {
-            excise = (cif.value + 6500) * 0.30 + 6500;
-            totalTax = excise * exchange_rate.value;
-        } else if (cc.value <= 3000) {
-            excise = (cif.value + 13500) * 0.70 + 13500;
-            totalTax = excise * exchange_rate.value;
+        if (cc.value <= 1800) {
+            dutyRate = 0.45;
+            exciseRate = 0.10;
+        } else if (cc.value > 2000 && cc.value <= 2500) {
+            dutyRate = 0.45;
+            exciseRate = 1.10;
+        } else if (cc.value > 2500) {
+            dutyRate = 0.45;
+            exciseRate = 1.10;
         } else {
-            excise = (cif.value + 14500) * 1.00 + 14500;
-            totalTax = excise * exchange_rate.value;
+            // No tax rates provided for 1801cc to 2000cc
+            dutyRate = 0;
+            exciseRate = 0;
         }
     }
+    duty = dutyRate * cif.value;
+    excise = (exciseRate || 0) * (duty + cif.value);
+    vat = (cif.value + duty + excise) * vatRate;
+    totalTax = duty + excise + vat;
+
     return { duty, excise, vat, totalTax };
 }
 
 function calculateDiesel() {
-    let dutyRate = 0, exciseRate = 0, vatRate = 0;
     let duty = 0, excise = 0, vat = 0, totalTax = 0;
-
+    
     if (ageCategory.value === 'under4') {
-        vatRate = 0.14;
+        let dutyRate, exciseRate, vatRate = 0.14;
         if (cc.value <= 1500) {
             dutyRate = 0.35;
         } else if (cc.value <= 2000) {
@@ -741,28 +734,28 @@ function calculateDiesel() {
             exciseRate = 1.10;
         }
         duty = dutyRate * cif.value;
-        excise = exciseRate * (duty + cif.value);
+        excise = (exciseRate || 0) * (duty + cif.value);
         vat = (cif.value + duty + excise) * vatRate;
-        totalTax = (duty + excise + vat) * exchange_rate.value;
+        totalTax = duty + excise + vat;
     } else { // over4
-        duty = 0;
-        vat = 0;
         if (cc.value <= 1500) {
-            excise = 800000; // GYD
-            totalTax = excise;
+            totalTax = 800000 / exchange_rate.value;
         } else if (cc.value <= 2000) {
-            excise = (cif.value + 15400) * 0.30 + 15400;
-            totalTax = excise * exchange_rate.value;
+            // The example in the table uses $8,200, not $15,400
+            excise = (cif.value + 8200) * 0.30 + 8200;
+            totalTax = excise;
         } else if (cc.value <= 2500) {
             excise = (cif.value + 15400) * 0.70 + 15400;
-            totalTax = excise * exchange_rate.value;
+            totalTax = excise;
         } else if (cc.value <= 3000) {
             excise = (cif.value + 15500) * 0.70 + 15500;
-            totalTax = excise * exchange_rate.value;
+            totalTax = excise;
         } else {
             excise = (cif.value + 17200) * 1.00 + 17200;
-            totalTax = excise * exchange_rate.value;
+            totalTax = excise;
         }
+        duty = 0;
+        vat = 0;
     }
     return { duty, excise, vat, totalTax };
 }
@@ -771,49 +764,32 @@ function calculateTax() {
     error.value = null;
     results.value = null;
 
-    let duty = 0, excise = 0, vat = 0, totalTax = 0;
+    let taxResultsUSD = {};
 
     if (plate.value === 'G') {
-        excise = 2000 * exchange_rate.value;
-        totalTax = excise;
+        taxResultsUSD = { duty: 0, excise: 2000, vat: 0, totalTax: 2000 };
     } else if (fuel.value === 'Electric') {
-        // No taxes
+        taxResultsUSD = { duty: 0, excise: 0, vat: 0, totalTax: 0 };
     } else if (fuel.value === 'Gasoline') {
-        const res = calculateGasoline();
-        duty = res.duty;
-        excise = res.excise;
-        vat = res.vat;
-        totalTax = res.totalTax;
+        taxResultsUSD = calculateGasoline();
     } else if (fuel.value === 'Diesel') {
-        const res = calculateDiesel();
-        duty = res.duty;
-        excise = res.excise;
-        vat = res.vat;
-        totalTax = res.totalTax;
+        taxResultsUSD = calculateDiesel();
     }
 
+    // Convert all values to GYD for display
     const cifGyd = cif.value * exchange_rate.value;
-
-    let dutyGyd = 0, exciseGyd = 0, vatGyd = 0;
-
-    if (ageCategory.value === 'under4' && plate.value !== 'G' && fuel.value !== 'Electric') {
-        dutyGyd = duty * exchange_rate.value;
-        exciseGyd = excise * exchange_rate.value;
-        vatGyd = vat * exchange_rate.value;
-    } else if (ageCategory.value === 'over4' && plate.value !== 'G') {
-        // For older cars, `totalTax` is already in GYD and represents excise tax only.
-        exciseGyd = totalTax;
-    } else if (plate.value === 'G') {
-        exciseGyd = totalTax;
-    }
-
-    const totalTaxWithFee = totalTax + processingFee;
+    const dutyGyd = taxResultsUSD.duty * exchange_rate.value;
+    const exciseGyd = taxResultsUSD.excise * exchange_rate.value;
+    const vatGyd = taxResultsUSD.vat * exchange_rate.value;
+    const totalTaxGyd = taxResultsUSD.totalTax * exchange_rate.value;
+    
+    const totalTaxWithFee = totalTaxGyd + processingFee;
 
     results.value = {
         cifValue: cifGyd,
-        duty: dutyGyd, // Already in GYD or 0
-        excise: exciseGyd, // Already in GYD or 0
-        vat: vatGyd, // Already in GYD or 0
+        duty: dutyGyd,
+        excise: exciseGyd,
+        vat: vatGyd,
         processingFee,
         totalTax: totalTaxWithFee,
         totalPrice: cifGyd + totalTaxWithFee,
