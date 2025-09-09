@@ -277,7 +277,10 @@
 <script setup>
 import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
+import { formatCurrency as formatCurrencyUtil } from './utils/currency'
+import { calculateGasoline, calculateDiesel } from './utils/tax'
+import { createEstimatePdf } from './utils/pdf'
+import { fitText } from './utils/dom'
 
 // Theme toggling
 const theme = useTheme()
@@ -334,14 +337,7 @@ const estimateInfo = reactive({
 const displayCurrency = ref('GYD')
 
 function formatCurrency(val) {
-    const currency = displayCurrency.value
-    const rate = currency === 'USD' ? exchange_rate.value : 1
-    const displayValue = val / rate
-
-    return displayValue.toLocaleString('en-US', {
-        style: 'currency',
-        currency: currency
-    })
+    return formatCurrencyUtil(val, displayCurrency.value, exchange_rate.value)
 }
 function onLogoChange(e) {
     const file = e?.target?.files?.[0] || (Array.isArray(e) ? e[0] : e)
@@ -359,217 +355,16 @@ function onLogoChange(e) {
 
 async function generateEstimatePdf(download = false) {
     if (!results.value) return
-    const pdfDoc = await PDFDocument.create()
-    const page = pdfDoc.addPage([595.28, 841.89])
-    const { width, height } = page.getSize()
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
-    const drawText = (text, x, y, size = 12, options = {}) => {
-        const { align = 'left', font: f = font, color = rgb(0, 0, 0) } = options
-        const textWidth = f.widthOfTextAtSize(text, size)
-        let drawX = x
-        if (align === 'center') drawX = x - textWidth / 2
-        if (align === 'right') drawX = x - textWidth
-        page.drawText(text, { x: drawX, y, size, font: f, color })
-    }
-    const wrapText = (text, maxWidth, size) => {
-        const words = text.split(' ')
-        const lines = []
-        let line = ''
-        words.forEach(word => {
-            const test = line ? `${line} ${word}` : word
-            const width = font.widthOfTextAtSize(test, size)
-            if (width > maxWidth && line) {
-                lines.push(line)
-                line = word
-            } else {
-                line = test
-            }
-        })
-        if (line) lines.push(line)
-        return lines
-    }
-    const margin = 40
-    let y = height - margin
-
-    if (estimateInfo.companyLogo) {
-        try {
-            const base64 = estimateInfo.companyLogo.split(',')[1]
-            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-            const img = estimateInfo.companyLogo.includes('image/png')
-                ? await pdfDoc.embedPng(bytes)
-                : await pdfDoc.embedJpg(bytes)
-            page.drawImage(img, { x: margin, y: y - 60, width: 60, height: 60 })
-        } catch (e) { }
-    }
-
-    let infoX = estimateInfo.companyLogo ? margin + 70 : margin
-    let infoY = y - 15
-    if (estimateInfo.companyName) { drawText(estimateInfo.companyName, infoX, infoY, 12, { font: fontBold }); infoY -= 14 }
-    if (estimateInfo.companyAddress) { drawText(estimateInfo.companyAddress, infoX, infoY); infoY -= 14 }
-    if (estimateInfo.companyEmail) { drawText(estimateInfo.companyEmail, infoX, infoY); infoY -= 14 }
-    if (estimateInfo.companyPhone) { drawText(estimateInfo.companyPhone, infoX, infoY); infoY -= 14 }
-
-    drawText(`Generated: ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`, width - margin, y - 15, 12, { align: 'right' })
-
-    y -= 80
-    drawText('Motor Vehicle Tax Estimate', width / 2, y, 18, { align: 'center', font: fontBold })
-
-    y -= 30
-    const hasCustomerInfo = estimateInfo.customerFirstName || estimateInfo.customerLastName || estimateInfo.customerEmail || estimateInfo.customerPhone
-    if (hasCustomerInfo) {
-        drawText('Customer Details', margin, y, 14, { font: fontBold })
-        y -= 18
-        const name = [estimateInfo.customerFirstName, estimateInfo.customerLastName].filter(Boolean).join(' ')
-        if (name) { drawText(`Name: ${name}`, margin, y); y -= 16 }
-        if (estimateInfo.customerEmail) { drawText(`Email: ${estimateInfo.customerEmail}`, margin, y); y -= 16 }
-        if (estimateInfo.customerPhone) { drawText(`Phone: ${estimateInfo.customerPhone}`, margin, y); y -= 16 }
-        y -= 10
-    }
-
-    drawText('Vehicle Details', margin, y, 14, { font: fontBold })
-    y -= 18
-    const vehicleItems = [
-        ['Vehicle Type:', vehicle_type.value],
-        ['Vehicle Year:', estimateInfo.vehicleYear || ''],
-        ['Vehicle Make:', estimateInfo.vehicleMake || ''],
-        ['Vehicle Model:', estimateInfo.vehicleModel || ''],
-        ['Engine Capacity:', cc.value ? `${cc.value} ${fuel.value === 'Electric' ? 'KW' : 'CC'}` : ''],
-        ['CIF Value:', formatCurrency(results.value.cifValue)],
-        ['Exchange Rate:', exchange_rate.value ? String(exchange_rate.value) : '']
-    ]
-    vehicleItems.forEach(item => {
-        if (item[1]) {
-            drawText(item[0], margin, y)
-            drawText(item[1], width - margin, y, 12, { align: 'right' })
-            page.drawLine({
-                start: { x: margin, y: y - 4 },
-                end: { x: width - margin, y: y - 4 },
-                color: rgb(0.8, 0.8, 0.8),
-                dashArray: [3]
-            })
-            y -= 20
-        }
+    const blob = await createEstimatePdf({
+        results: results.value,
+        estimateInfo,
+        vehicleType: vehicle_type.value,
+        cc: cc.value,
+        fuel: fuel.value,
+        exchangeRate: exchange_rate.value,
+        displayCurrency: displayCurrency.value,
+        formatCurrency
     })
-
-    drawText(`Values shown in ${displayCurrency.value}.`, width - margin, y, 10, { align: 'right', color: rgb(0.4, 0.4, 0.4) })
-
-    y -= 30
-    const glanceHeight = 60
-    const boxWidth = (width - margin * 2 - 20) / 3
-    const boxY = y - glanceHeight
-    const glanceData = [
-        { label: 'CIF', value: formatCurrency(results.value.cifValue), color: rgb(0.25, 0.5, 0.95) },
-        { label: 'Taxes', value: formatCurrency(results.value.totalTax), color: rgb(0.85, 0.2, 0.2) },
-        { label: 'Total', value: formatCurrency(results.value.totalPrice), color: rgb(0.0, 0.5, 0.3) }
-    ]
-    glanceData.forEach((g, i) => {
-        const x = margin + i * (boxWidth + 10)
-        page.drawRectangle({ x, y: boxY, width: boxWidth, height: glanceHeight, color: rgb(0.95, 0.95, 0.95), borderColor: g.color, borderWidth: 1 })
-        drawText(g.label, x + boxWidth / 2, boxY + glanceHeight - 18, 12, { align: 'center', font: fontBold, color: g.color })
-        drawText(g.value, x + boxWidth / 2, boxY + 20, 14, { align: 'center', font: fontBold, color: g.color })
-    })
-
-    y = boxY - 40
-    drawText('Taxes & Costs', margin, y, 14, { font: fontBold })
-    y -= 18
-    const costItems = [
-        ['CIF Value:', formatCurrency(results.value.cifValue)],
-        ['Customs Duty:', formatCurrency(results.value.duty)],
-        ['Excise Tax:', formatCurrency(results.value.excise)],
-        ['VAT:', formatCurrency(results.value.vat)],
-        ['Processing Fee:', formatCurrency(results.value.processingFee)],
-        ['Total Tax Payable:', formatCurrency(results.value.totalTax)],
-        ['Final Cost:', formatCurrency(results.value.totalPrice)]
-    ]
-    costItems.forEach((item, idx) => {
-        let f = idx >= 5 ? fontBold : font
-        let color = idx === 6 ? rgb(0.0, 0.5, 0.3) : rgb(0, 0, 0)
-        drawText(item[0], margin, y, 12, { font: f, color })
-        drawText(item[1], width - margin, y, 12, { align: 'right', font: f, color })
-        page.drawLine({
-            start: { x: margin, y: y - 4 },
-            end: { x: width - margin, y: y - 4 },
-            color: rgb(0.8, 0.8, 0.8),
-            dashArray: [3]
-        })
-        y -= 20
-    })
-
-    y -= 10
-    const formulaLines = []
-    const formulas = results.value.formulas
-    if (results.value.duty > 0 && formulas?.dutyRate) {
-        formulaLines.push({
-            title: 'Customs Duty',
-            formula: `(CIF × Duty Rate) = ${formatCurrency(results.value.cifValue)} × ${(formulas.dutyRate * 100).toFixed(2)}% = ${formatCurrency(results.value.duty)}`
-        })
-    }
-    if (results.value.excise > 0 && formulas?.exciseType) {
-        if (formulas.exciseType === 'rate') {
-            const base = results.value.cifValue + results.value.duty
-            formulaLines.push({
-                title: 'Excise Tax',
-                formula: `((CIF + Duty) × Excise Rate) = ${formatCurrency(base)} × ${(formulas.exciseRate * 100).toFixed(2)}% = ${formatCurrency(results.value.excise)}`
-            })
-        } else if (formulas.exciseType === 'compound') {
-            const constVal = formulas.exciseConstUSD * exchange_rate.value
-            const base = results.value.cifValue + constVal
-            const constStr = `US$${formulas.exciseConstUSD.toLocaleString()}`
-            formulaLines.push({
-                title: 'Excise Tax',
-                formula: `((CIF + ${constStr}) × Excise Rate + ${constStr}) = ${formatCurrency(base)} × ${(formulas.exciseRate * 100).toFixed(2)}% + ${formatCurrency(constVal)} = ${formatCurrency(results.value.excise)}`
-            })
-        } else if (formulas.exciseType === 'flat') {
-            const flat = displayCurrency.value === 'USD' ? formulas.exciseFlatGYD / exchange_rate.value : formulas.exciseFlatGYD
-            const flatConstStr = `GY$${formulas.exciseFlatGYD.toLocaleString()}`
-            formulaLines.push({
-                title: 'Excise Tax',
-                formula: `(Flat Amount ${flatConstStr}) = ${formatCurrency(flat)}`
-            })
-        }
-    }
-    if (results.value.vat > 0 && formulas?.vatRate) {
-        const base = results.value.cifValue + results.value.duty + results.value.excise
-        formulaLines.push({
-            title: 'VAT',
-            formula: `((CIF + Duty + Excise) × VAT Rate) = ${formatCurrency(base)} × ${(formulas.vatRate * 100).toFixed(2)}% = ${formatCurrency(results.value.vat)}`
-        })
-    }
-    const formulaColor = rgb(0.5, 0.5, 0.5)
-    formulaLines.forEach(({ title, formula }) => {
-        drawText(title, margin, y, 10, { font: fontBold, color: formulaColor })
-        const lines = wrapText(formula, width - margin * 2, 10)
-        lines.forEach((line, i) => {
-            drawText(line, margin, y - (i + 1) * 12, 10, { color: formulaColor })
-        })
-        y -= (lines.length + 1) * 12 + 4
-    })
-
-    const disclaimer = 'This calculator provides an estimate for informational purposes only and should not be considered as financial or legal advice. The figures are based on publicly available information from the Guyana Revenue Authority (GRA) but we cannot guarantee their accuracy or timeliness. This tool is not affiliated with or endorsed by the GRA. The developers of this tool are not liable for any errors, omissions, or for any loss or damage arising from its use. You are solely responsible for verifying the accuracy of the results with the GRA or a qualified tax professional.';
-    const disclaimerLines = wrapText(disclaimer, width - margin * 2, 10)
-    const graWebsite = 'Official Source: https://www.gra.gov.gy/imports/motor-vehicle/';
-
-    // Calculate Y position for the top of the footer, assuming it's at the bottom of the page.
-    let footerTopY = margin + (disclaimerLines.length - 1) * 12;
-
-    // If the content (y) would overlap with the footer, position footer below content.
-    if (y < footerTopY + 20) { // 20px padding
-        footerTopY = y - 30; // 30px space below content
-    }
-
-    // Draw disclaimer text, from top to bottom.
-    let currentY = footerTopY;
-    disclaimerLines.forEach((line) => {
-        drawText(line, width / 2, currentY, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) });
-        currentY -= 12;
-    });
-
-    // Draw GRA website link below disclaimer.
-    drawText(graWebsite, width / 2, currentY, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) });
-
-    const pdfBytes = await pdfDoc.save()
-    const blob = new Blob([pdfBytes], { type: 'application/pdf' })
     const oldUrl = pdfPreviewUrl.value
     pdfPreviewUrl.value = URL.createObjectURL(blob)
     if (oldUrl) URL.revokeObjectURL(oldUrl)
@@ -594,27 +389,6 @@ async function generateEstimatePdf(download = false) {
 function downloadEstimatePdf() {
     generateEstimatePdf(true)
 }
-
-function fitText(el) {
-    if (!el || !el.parentElement) return
-
-    // Reset to stylesheet value to get a baseline
-    el.style.fontSize = ''
-
-    const parent = el.parentElement
-    const parentStyle = window.getComputedStyle(parent)
-    const availableWidth = parent.clientWidth - parseFloat(parentStyle.paddingLeft) - parseFloat(parentStyle.paddingRight)
-
-    // Only resize if the text is actually overflowing
-    if (el.scrollWidth > availableWidth) {
-        const currentFontSize = parseFloat(window.getComputedStyle(el).fontSize)
-        // Calculate the new font size based on the ratio of available width to text width.
-        const newFontSize = Math.floor(currentFontSize * (availableWidth / el.scrollWidth))
-        const minFontSize = 10 // px
-        el.style.fontSize = Math.max(newFontSize, minFontSize) + 'px'
-    }
-}
-
 function updateStatSizes() {
     ;[cifRef.value, taxRef.value, totalRef.value].forEach(fitText)
 }
@@ -744,147 +518,6 @@ function resetForm() {
     error.value = null;
     results.value = null;
 }
-
-function calculateGasoline() {
-    let duty = 0, excise = 0, vat = 0, totalTax = 0;
-    let dutyRate = 0, exciseRate = 0, vatRate = 0, exciseType = null, exciseConstUSD = 0, exciseFlatGYD = 0;
-
-    if (vehicle_type.value === 'Bike') {
-        dutyRate = 0.20;
-        if (cc.value > 175) {
-            exciseRate = 0.10;
-        }
-        exciseType = 'rate';
-        vatRate = 0.14;
-        duty = dutyRate * cif.value;
-        excise = exciseRate * (duty + cif.value);
-        vat = (cif.value + duty + excise) * vatRate;
-        totalTax = duty + excise + vat;
-    } else if (ageCategory.value === 'under4') {
-        vatRate = 0.14;
-        if (cc.value <= 1500) {
-            dutyRate = 0.35;
-            exciseRate = 0;
-        } else if (cc.value <= 2000) {
-            dutyRate = 0.45;
-            exciseRate = 0.10;
-        } else if (cc.value <= 3000) {
-            dutyRate = 0.45;
-            exciseRate = 1.10;
-        } else {
-            dutyRate = 0.45;
-            exciseRate = 1.40;
-        }
-        exciseType = 'rate';
-        duty = dutyRate * cif.value;
-        excise = exciseRate * (duty + cif.value);
-        vat = (cif.value + duty + excise) * vatRate;
-        totalTax = duty + excise + vat;
-    } else { // over4
-        dutyRate = 0;
-        vatRate = 0;
-        if (cc.value <= 1000) {
-            exciseType = 'flat';
-            exciseFlatGYD = 800000;
-            excise = exciseFlatGYD / exchange_rate.value;
-            totalTax = excise;
-        } else if (cc.value <= 1500) {
-            exciseType = 'flat';
-            exciseFlatGYD = 800000;
-            excise = exciseFlatGYD / exchange_rate.value;
-            totalTax = excise;
-        } else if (cc.value <= 1800) {
-            exciseType = 'compound';
-            exciseConstUSD = 6000;
-            exciseRate = 0.30;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else if (cc.value <= 2000) {
-            exciseType = 'compound';
-            exciseConstUSD = 6500;
-            exciseRate = 0.30;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else if (cc.value <= 3000) {
-            exciseType = 'compound';
-            exciseConstUSD = 13500;
-            exciseRate = 0.70;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else {
-            exciseType = 'compound';
-            exciseConstUSD = 14500;
-            exciseRate = 1.00;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        }
-    }
-    return { duty, excise, vat, totalTax, dutyRate, exciseRate, vatRate, exciseType, exciseConstUSD, exciseFlatGYD };
-}
-
-function calculateDiesel() {
-    let duty = 0, excise = 0, vat = 0, totalTax = 0;
-    let dutyRate = 0, exciseRate = 0, vatRate = 0, exciseType = null, exciseConstUSD = 0, exciseFlatGYD = 0;
-
-    if (ageCategory.value === 'under4') {
-        vatRate = 0.14;
-        if (cc.value <= 1500) {
-            dutyRate = 0.35;
-            exciseRate = 0;
-        } else if (cc.value <= 2000) {
-            dutyRate = 0.45;
-            exciseRate = 0.10;
-        } else if (cc.value <= 2500) {
-            dutyRate = 0.45;
-            exciseRate = 1.10;
-        } else {
-            dutyRate = 0.45;
-            exciseRate = 1.10;
-        }
-        exciseType = 'rate';
-        duty = dutyRate * cif.value;
-        excise = (exciseRate || 0) * (duty + cif.value);
-        vat = (cif.value + duty + excise) * vatRate;
-        totalTax = duty + excise + vat;
-    } else { // over4
-        dutyRate = 0;
-        vatRate = 0;
-        if (cc.value <= 1500) {
-            exciseType = 'flat';
-            exciseFlatGYD = 800000;
-            excise = exciseFlatGYD / exchange_rate.value;
-            totalTax = excise;
-        } else if (cc.value <= 2000) {
-            exciseType = 'compound';
-            exciseConstUSD = 15400;
-            exciseRate = 0.30;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else if (cc.value <= 2500) {
-            exciseType = 'compound';
-            exciseConstUSD = 15400;
-            exciseRate = 0.70;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else if (cc.value <= 3000) {
-            exciseType = 'compound';
-            exciseConstUSD = 15500;
-            exciseRate = 0.70;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else {
-            exciseType = 'compound';
-            exciseConstUSD = 17200;
-            exciseRate = 1.00;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        }
-        duty = 0;
-        vat = 0;
-    }
-    return { duty, excise, vat, totalTax, dutyRate, exciseRate, vatRate, exciseType, exciseConstUSD, exciseFlatGYD };
-}
-
 function calculateTax() {
     error.value = null;
     results.value = null;
@@ -896,9 +529,20 @@ function calculateTax() {
     } else if (fuel.value === 'Electric') {
         taxResultsUSD = { duty: 0, excise: 0, vat: 0, totalTax: 0, dutyRate: 0, exciseRate: 0, vatRate: 0, exciseType: null, exciseConstUSD: 0, exciseFlatGYD: 0 };
     } else if (fuel.value === 'Gasoline') {
-        taxResultsUSD = calculateGasoline();
+        taxResultsUSD = calculateGasoline({
+            cc: cc.value,
+            cif: cif.value,
+            exchangeRate: exchange_rate.value,
+            vehicleType: vehicle_type.value,
+            ageCategory: ageCategory.value
+        })
     } else if (fuel.value === 'Diesel') {
-        taxResultsUSD = calculateDiesel();
+        taxResultsUSD = calculateDiesel({
+            cc: cc.value,
+            cif: cif.value,
+            exchangeRate: exchange_rate.value,
+            ageCategory: ageCategory.value
+        })
     }
 
     // Convert all values to GYD for display
