@@ -5,5 +5,11 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     reporters: 'verbose',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['app/utils/**'],
+      all: true,
+    },
   },
 });
