@@ -278,6 +278,8 @@
 import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useTheme } from 'vuetify'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
+import { formatCurrency as formatCurrencyUtil } from './utils/currency'
+import { calculateGasoline, calculateDiesel } from './utils/tax'
 
 // Theme toggling
 const theme = useTheme()
@@ -334,14 +336,7 @@ const estimateInfo = reactive({
 const displayCurrency = ref('GYD')
 
 function formatCurrency(val) {
-    const currency = displayCurrency.value
-    const rate = currency === 'USD' ? exchange_rate.value : 1
-    const displayValue = val / rate
-
-    return displayValue.toLocaleString('en-US', {
-        style: 'currency',
-        currency: currency
-    })
+    return formatCurrencyUtil(val, displayCurrency.value, exchange_rate.value)
 }
 function onLogoChange(e) {
     const file = e?.target?.files?.[0] || (Array.isArray(e) ? e[0] : e)
@@ -744,147 +739,6 @@ function resetForm() {
     error.value = null;
     results.value = null;
 }
-
-function calculateGasoline() {
-    let duty = 0, excise = 0, vat = 0, totalTax = 0;
-    let dutyRate = 0, exciseRate = 0, vatRate = 0, exciseType = null, exciseConstUSD = 0, exciseFlatGYD = 0;
-
-    if (vehicle_type.value === 'Bike') {
-        dutyRate = 0.20;
-        if (cc.value > 175) {
-            exciseRate = 0.10;
-        }
-        exciseType = 'rate';
-        vatRate = 0.14;
-        duty = dutyRate * cif.value;
-        excise = exciseRate * (duty + cif.value);
-        vat = (cif.value + duty + excise) * vatRate;
-        totalTax = duty + excise + vat;
-    } else if (ageCategory.value === 'under4') {
-        vatRate = 0.14;
-        if (cc.value <= 1500) {
-            dutyRate = 0.35;
-            exciseRate = 0;
-        } else if (cc.value <= 2000) {
-            dutyRate = 0.45;
-            exciseRate = 0.10;
-        } else if (cc.value <= 3000) {
-            dutyRate = 0.45;
-            exciseRate = 1.10;
-        } else {
-            dutyRate = 0.45;
-            exciseRate = 1.40;
-        }
-        exciseType = 'rate';
-        duty = dutyRate * cif.value;
-        excise = exciseRate * (duty + cif.value);
-        vat = (cif.value + duty + excise) * vatRate;
-        totalTax = duty + excise + vat;
-    } else { // over4
-        dutyRate = 0;
-        vatRate = 0;
-        if (cc.value <= 1000) {
-            exciseType = 'flat';
-            exciseFlatGYD = 800000;
-            excise = exciseFlatGYD / exchange_rate.value;
-            totalTax = excise;
-        } else if (cc.value <= 1500) {
-            exciseType = 'flat';
-            exciseFlatGYD = 800000;
-            excise = exciseFlatGYD / exchange_rate.value;
-            totalTax = excise;
-        } else if (cc.value <= 1800) {
-            exciseType = 'compound';
-            exciseConstUSD = 6000;
-            exciseRate = 0.30;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else if (cc.value <= 2000) {
-            exciseType = 'compound';
-            exciseConstUSD = 6500;
-            exciseRate = 0.30;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else if (cc.value <= 3000) {
-            exciseType = 'compound';
-            exciseConstUSD = 13500;
-            exciseRate = 0.70;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else {
-            exciseType = 'compound';
-            exciseConstUSD = 14500;
-            exciseRate = 1.00;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        }
-    }
-    return { duty, excise, vat, totalTax, dutyRate, exciseRate, vatRate, exciseType, exciseConstUSD, exciseFlatGYD };
-}
-
-function calculateDiesel() {
-    let duty = 0, excise = 0, vat = 0, totalTax = 0;
-    let dutyRate = 0, exciseRate = 0, vatRate = 0, exciseType = null, exciseConstUSD = 0, exciseFlatGYD = 0;
-
-    if (ageCategory.value === 'under4') {
-        vatRate = 0.14;
-        if (cc.value <= 1500) {
-            dutyRate = 0.35;
-            exciseRate = 0;
-        } else if (cc.value <= 2000) {
-            dutyRate = 0.45;
-            exciseRate = 0.10;
-        } else if (cc.value <= 2500) {
-            dutyRate = 0.45;
-            exciseRate = 1.10;
-        } else {
-            dutyRate = 0.45;
-            exciseRate = 1.10;
-        }
-        exciseType = 'rate';
-        duty = dutyRate * cif.value;
-        excise = (exciseRate || 0) * (duty + cif.value);
-        vat = (cif.value + duty + excise) * vatRate;
-        totalTax = duty + excise + vat;
-    } else { // over4
-        dutyRate = 0;
-        vatRate = 0;
-        if (cc.value <= 1500) {
-            exciseType = 'flat';
-            exciseFlatGYD = 800000;
-            excise = exciseFlatGYD / exchange_rate.value;
-            totalTax = excise;
-        } else if (cc.value <= 2000) {
-            exciseType = 'compound';
-            exciseConstUSD = 15400;
-            exciseRate = 0.30;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else if (cc.value <= 2500) {
-            exciseType = 'compound';
-            exciseConstUSD = 15400;
-            exciseRate = 0.70;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else if (cc.value <= 3000) {
-            exciseType = 'compound';
-            exciseConstUSD = 15500;
-            exciseRate = 0.70;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        } else {
-            exciseType = 'compound';
-            exciseConstUSD = 17200;
-            exciseRate = 1.00;
-            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
-            totalTax = excise;
-        }
-        duty = 0;
-        vat = 0;
-    }
-    return { duty, excise, vat, totalTax, dutyRate, exciseRate, vatRate, exciseType, exciseConstUSD, exciseFlatGYD };
-}
-
 function calculateTax() {
     error.value = null;
     results.value = null;
@@ -896,9 +750,20 @@ function calculateTax() {
     } else if (fuel.value === 'Electric') {
         taxResultsUSD = { duty: 0, excise: 0, vat: 0, totalTax: 0, dutyRate: 0, exciseRate: 0, vatRate: 0, exciseType: null, exciseConstUSD: 0, exciseFlatGYD: 0 };
     } else if (fuel.value === 'Gasoline') {
-        taxResultsUSD = calculateGasoline();
+        taxResultsUSD = calculateGasoline({
+            cc: cc.value,
+            cif: cif.value,
+            exchangeRate: exchange_rate.value,
+            vehicleType: vehicle_type.value,
+            ageCategory: ageCategory.value
+        })
     } else if (fuel.value === 'Diesel') {
-        taxResultsUSD = calculateDiesel();
+        taxResultsUSD = calculateDiesel({
+            cc: cc.value,
+            cif: cif.value,
+            exchangeRate: exchange_rate.value,
+            ageCategory: ageCategory.value
+        })
     }
 
     // Convert all values to GYD for display
