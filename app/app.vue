@@ -5,9 +5,6 @@
                 GRA Tax Calculator
             </v-app-bar-title>
             <v-spacer></v-spacer>
-            <v-btn @click="toggleCurrency" variant="text" class="text-none" style="min-width: 80px;">
-                {{ displayCurrency }}
-            </v-btn>
             <v-btn icon @click="toggleTheme" variant="text">
                 <v-icon>{{ isDark ? 'mdi-weather-night' : 'mdi-weather-sunny' }}</v-icon>
             </v-btn>
@@ -17,9 +14,19 @@
             <v-card>
                 <v-card-title class="text-h6">Disclaimer</v-card-title>
                 <v-card-text>
-                    <p class="mb-4">
-                        This calculator is not affiliated with or endorsed by the Guyana Revenue
-                        Authority (GRA). Estimates are for guidance only.
+                    <p class="mb-2 text-body-2">
+                        This calculator provides an estimate for informational purposes only and should not be
+                        considered as financial or legal advice.
+                    </p>
+                    <p class="mb-2 text-body-2">
+                        The figures are based on publicly available information from the Guyana Revenue Authority (GRA)
+                        but we cannot guarantee their accuracy or timeliness. This tool is not affiliated with or
+                        endorsed by the GRA.
+                    </p>
+                    <p class="mb-4 text-body-2">
+                        The developers of this tool are not liable for any errors, omissions, or for any loss or damage
+                        arising from its use. You are solely responsible for verifying the accuracy of the results with
+                        the GRA or a qualified tax professional.
                     </p>
                     <v-checkbox v-model="disclaimerChecked" label="I understand and agree"></v-checkbox>
                 </v-card-text>
@@ -45,6 +52,13 @@
                         </v-alert>
 
                         <v-card class="pa-4" rounded="xl">
+                            <div class="d-flex justify-end mb-2">
+                                <v-btn-toggle v-model="displayCurrency" mandatory color="primary" variant="outlined"
+                                    density="compact">
+                                    <v-btn value="GYD" class="text-none">GYD</v-btn>
+                                    <v-btn value="USD" class="text-none">USD</v-btn>
+                                </v-btn-toggle>
+                            </div>
                             <v-card-text>
                                 <div class="mb-6">
                                     <v-label class="mb-2 font-weight-medium">Propulsion</v-label>
@@ -109,7 +123,7 @@
                                                         <div class="stat-title">CIF Value</div>
                                                         <div class="stat-value" ref="cifRef"
                                                             :title="formatCurrency(results.cifValue)">{{
-                                                            formatCurrency(results.cifValue) }}</div>
+                                                                formatCurrency(results.cifValue) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                                 <v-col cols="12" md="4">
@@ -117,7 +131,7 @@
                                                         <div class="stat-title">Total Tax</div>
                                                         <div class="stat-value" ref="taxRef"
                                                             :title="formatCurrency(results.totalTax)">{{
-                                                            formatCurrency(results.totalTax) }}</div>
+                                                                formatCurrency(results.totalTax) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                                 <v-col cols="12" md="4">
@@ -125,7 +139,7 @@
                                                         <div class="stat-title">Total Cost</div>
                                                         <div class="stat-value" ref="totalRef"
                                                             :title="formatCurrency(results.totalPrice)">{{
-                                                            formatCurrency(results.totalPrice) }}</div>
+                                                                formatCurrency(results.totalPrice) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                             </v-row>
@@ -134,17 +148,17 @@
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>Customs Duty</v-list-item-title>
                                                     <template v-slot:append><span class="font-weight-medium">{{
-                                                            formatCurrency(results.duty) }}</span></template>
+                                                        formatCurrency(results.duty) }}</span></template>
                                                 </v-list-item>
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>Excise Tax</v-list-item-title>
                                                     <template v-slot:append><span class="font-weight-medium">{{
-                                                            formatCurrency(results.excise) }}</span></template>
+                                                        formatCurrency(results.excise) }}</span></template>
                                                 </v-list-item>
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>VAT (14%)</v-list-item-title>
                                                     <template v-slot:append><span class="font-weight-medium">{{
-                                                            formatCurrency(results.vat) }}</span></template>
+                                                        formatCurrency(results.vat) }}</span></template>
                                                 </v-list-item>
                                                 <v-divider class="my-2"></v-divider>
                                                 <v-list-item prepend-icon="mdi-cog-outline">
@@ -241,16 +255,15 @@
 
                         <footer class="text-center text-caption text-medium-emphasis py-8">
                             <p>
-                                This calculator is not affiliated with or endorsed by the
+                                This calculator is for estimation purposes only and is not affiliated with the
                                 <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
                                     class="text-primary">Guyana Revenue
                                     Authority (GRA)</a>.
-                                Always verify information on the official site.
+                                All calculations should be verified with the GRA or a qualified professional.
                             </p>
-                            <p class="mt-2">
-                                Built by <a href="https://wa.me/5927366642" target="_blank" rel="noopener"
-                                    class="text-primary">Ricardo
-                                    Persaud</a>.
+                            <p class="mt-2">For official information, please visit the <a
+                                    href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
+                                    class="text-primary">GRA Motor Vehicle Imports Page</a>.
                             </p>
                         </footer>
 
@@ -319,10 +332,6 @@ const estimateInfo = reactive({
     companyLogo: ''
 })
 const displayCurrency = ref('GYD')
-
-function toggleCurrency() {
-    displayCurrency.value = displayCurrency.value === 'GYD' ? 'USD' : 'GYD'
-}
 
 function formatCurrency(val) {
     const currency = displayCurrency.value
@@ -487,12 +496,78 @@ async function generateEstimatePdf(download = false) {
         y -= 20
     })
 
-    const disclaimer = 'This estimate is for guidance only. Taxes are computed as customs duty, excise, VAT and a $1,000 processing fee applied to your CIF value.'
-    const disclaimerLines = wrapText(disclaimer, width - margin * 2, 10)
-    let disclaimerY = margin + (disclaimerLines.length - 1) * 12
-    disclaimerLines.forEach((line, i) => {
-        drawText(line, width / 2, disclaimerY - i * 12, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) })
+    y -= 10
+    const formulaLines = []
+    const formulas = results.value.formulas
+    if (results.value.duty > 0 && formulas?.dutyRate) {
+        formulaLines.push({
+            title: 'Customs Duty',
+            formula: `(CIF × Duty Rate) = ${formatCurrency(results.value.cifValue)} × ${(formulas.dutyRate * 100).toFixed(2)}% = ${formatCurrency(results.value.duty)}`
+        })
+    }
+    if (results.value.excise > 0 && formulas?.exciseType) {
+        if (formulas.exciseType === 'rate') {
+            const base = results.value.cifValue + results.value.duty
+            formulaLines.push({
+                title: 'Excise Tax',
+                formula: `((CIF + Duty) × Excise Rate) = ${formatCurrency(base)} × ${(formulas.exciseRate * 100).toFixed(2)}% = ${formatCurrency(results.value.excise)}`
+            })
+        } else if (formulas.exciseType === 'compound') {
+            const constVal = formulas.exciseConstUSD * exchange_rate.value
+            const base = results.value.cifValue + constVal
+            const constStr = `US$${formulas.exciseConstUSD.toLocaleString()}`
+            formulaLines.push({
+                title: 'Excise Tax',
+                formula: `((CIF + ${constStr}) × Excise Rate + ${constStr}) = ${formatCurrency(base)} × ${(formulas.exciseRate * 100).toFixed(2)}% + ${formatCurrency(constVal)} = ${formatCurrency(results.value.excise)}`
+            })
+        } else if (formulas.exciseType === 'flat') {
+            const flat = displayCurrency.value === 'USD' ? formulas.exciseFlatGYD / exchange_rate.value : formulas.exciseFlatGYD
+            const flatConstStr = `GY$${formulas.exciseFlatGYD.toLocaleString()}`
+            formulaLines.push({
+                title: 'Excise Tax',
+                formula: `(Flat Amount ${flatConstStr}) = ${formatCurrency(flat)}`
+            })
+        }
+    }
+    if (results.value.vat > 0 && formulas?.vatRate) {
+        const base = results.value.cifValue + results.value.duty + results.value.excise
+        formulaLines.push({
+            title: 'VAT',
+            formula: `((CIF + Duty + Excise) × VAT Rate) = ${formatCurrency(base)} × ${(formulas.vatRate * 100).toFixed(2)}% = ${formatCurrency(results.value.vat)}`
+        })
+    }
+    const formulaColor = rgb(0.5, 0.5, 0.5)
+    formulaLines.forEach(({ title, formula }) => {
+        drawText(title, margin, y, 10, { font: fontBold, color: formulaColor })
+        const lines = wrapText(formula, width - margin * 2, 10)
+        lines.forEach((line, i) => {
+            drawText(line, margin, y - (i + 1) * 12, 10, { color: formulaColor })
+        })
+        y -= (lines.length + 1) * 12 + 4
     })
+
+    const disclaimer = 'This calculator provides an estimate for informational purposes only and should not be considered as financial or legal advice. The figures are based on publicly available information from the Guyana Revenue Authority (GRA) but we cannot guarantee their accuracy or timeliness. This tool is not affiliated with or endorsed by the GRA. The developers of this tool are not liable for any errors, omissions, or for any loss or damage arising from its use. You are solely responsible for verifying the accuracy of the results with the GRA or a qualified tax professional.';
+    const disclaimerLines = wrapText(disclaimer, width - margin * 2, 10)
+    const graWebsite = 'Official Source: https://www.gra.gov.gy/imports/motor-vehicle/';
+
+    // Calculate Y position for the top of the footer, assuming it's at the bottom of the page.
+    let footerTopY = margin + (disclaimerLines.length - 1) * 12;
+
+    // If the content (y) would overlap with the footer, position footer below content.
+    if (y < footerTopY + 20) { // 20px padding
+        footerTopY = y - 30; // 30px space below content
+    }
+
+    // Draw disclaimer text, from top to bottom.
+    let currentY = footerTopY;
+    disclaimerLines.forEach((line) => {
+        drawText(line, width / 2, currentY, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) });
+        currentY -= 12;
+    });
+
+    // Draw GRA website link below disclaimer.
+    drawText(graWebsite, width / 2, currentY, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) });
+
     const pdfBytes = await pdfDoc.save()
     const blob = new Blob([pdfBytes], { type: 'application/pdf' })
     const oldUrl = pdfPreviewUrl.value
@@ -672,21 +747,24 @@ function resetForm() {
 
 function calculateGasoline() {
     let duty = 0, excise = 0, vat = 0, totalTax = 0;
+    let dutyRate = 0, exciseRate = 0, vatRate = 0, exciseType = null, exciseConstUSD = 0, exciseFlatGYD = 0;
 
     if (vehicle_type.value === 'Bike') {
-        let dutyRate = 0.20, exciseRate = 0;
+        dutyRate = 0.20;
         if (cc.value > 175) {
             exciseRate = 0.10;
         }
+        exciseType = 'rate';
+        vatRate = 0.14;
         duty = dutyRate * cif.value;
         excise = exciseRate * (duty + cif.value);
-        vat = (cif.value + duty + excise) * 0.14;
+        vat = (cif.value + duty + excise) * vatRate;
         totalTax = duty + excise + vat;
     } else if (ageCategory.value === 'under4') {
-        let dutyRate = 0, exciseRate = 0;
-        let vatRate = 0.14;
+        vatRate = 0.14;
         if (cc.value <= 1500) {
             dutyRate = 0.35;
+            exciseRate = 0;
         } else if (cc.value <= 2000) {
             dutyRate = 0.45;
             exciseRate = 0.10;
@@ -697,43 +775,62 @@ function calculateGasoline() {
             dutyRate = 0.45;
             exciseRate = 1.40;
         }
+        exciseType = 'rate';
         duty = dutyRate * cif.value;
         excise = exciseRate * (duty + cif.value);
         vat = (cif.value + duty + excise) * vatRate;
         totalTax = duty + excise + vat;
     } else { // over4
-        duty = 0;
-        vat = 0;
+        dutyRate = 0;
+        vatRate = 0;
         if (cc.value <= 1000) {
-            excise = 800000 / exchange_rate.value;
+            exciseType = 'flat';
+            exciseFlatGYD = 800000;
+            excise = exciseFlatGYD / exchange_rate.value;
             totalTax = excise;
         } else if (cc.value <= 1500) {
-            excise = 800000 / exchange_rate.value;
+            exciseType = 'flat';
+            exciseFlatGYD = 800000;
+            excise = exciseFlatGYD / exchange_rate.value;
             totalTax = excise;
         } else if (cc.value <= 1800) {
-            excise = (cif.value + 6000) * 0.30 + 6000;
+            exciseType = 'compound';
+            exciseConstUSD = 6000;
+            exciseRate = 0.30;
+            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
             totalTax = excise;
         } else if (cc.value <= 2000) {
-            excise = (cif.value + 6500) * 0.30 + 6500;
+            exciseType = 'compound';
+            exciseConstUSD = 6500;
+            exciseRate = 0.30;
+            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
             totalTax = excise;
         } else if (cc.value <= 3000) {
-            excise = (cif.value + 13500) * 0.70 + 13500;
+            exciseType = 'compound';
+            exciseConstUSD = 13500;
+            exciseRate = 0.70;
+            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
             totalTax = excise;
         } else {
-            excise = (cif.value + 14500) * 1.00 + 14500;
+            exciseType = 'compound';
+            exciseConstUSD = 14500;
+            exciseRate = 1.00;
+            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
             totalTax = excise;
         }
     }
-    return { duty, excise, vat, totalTax };
+    return { duty, excise, vat, totalTax, dutyRate, exciseRate, vatRate, exciseType, exciseConstUSD, exciseFlatGYD };
 }
 
 function calculateDiesel() {
     let duty = 0, excise = 0, vat = 0, totalTax = 0;
-    
+    let dutyRate = 0, exciseRate = 0, vatRate = 0, exciseType = null, exciseConstUSD = 0, exciseFlatGYD = 0;
+
     if (ageCategory.value === 'under4') {
-        let dutyRate, exciseRate, vatRate = 0.14;
+        vatRate = 0.14;
         if (cc.value <= 1500) {
             dutyRate = 0.35;
+            exciseRate = 0;
         } else if (cc.value <= 2000) {
             dutyRate = 0.45;
             exciseRate = 0.10;
@@ -744,30 +841,48 @@ function calculateDiesel() {
             dutyRate = 0.45;
             exciseRate = 1.10;
         }
+        exciseType = 'rate';
         duty = dutyRate * cif.value;
         excise = (exciseRate || 0) * (duty + cif.value);
         vat = (cif.value + duty + excise) * vatRate;
         totalTax = duty + excise + vat;
     } else { // over4
+        dutyRate = 0;
+        vatRate = 0;
         if (cc.value <= 1500) {
-            totalTax = 800000 / exchange_rate.value;
+            exciseType = 'flat';
+            exciseFlatGYD = 800000;
+            excise = exciseFlatGYD / exchange_rate.value;
+            totalTax = excise;
         } else if (cc.value <= 2000) {
-            excise = (cif.value + 15400) * 0.30 + 15400;
+            exciseType = 'compound';
+            exciseConstUSD = 15400;
+            exciseRate = 0.30;
+            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
             totalTax = excise;
         } else if (cc.value <= 2500) {
-            excise = (cif.value + 15400) * 0.70 + 15400;
+            exciseType = 'compound';
+            exciseConstUSD = 15400;
+            exciseRate = 0.70;
+            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
             totalTax = excise;
         } else if (cc.value <= 3000) {
-            excise = (cif.value + 15500) * 0.70 + 15500;
+            exciseType = 'compound';
+            exciseConstUSD = 15500;
+            exciseRate = 0.70;
+            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
             totalTax = excise;
         } else {
-            excise = (cif.value + 17200) * 1.00 + 17200;
+            exciseType = 'compound';
+            exciseConstUSD = 17200;
+            exciseRate = 1.00;
+            excise = (cif.value + exciseConstUSD) * exciseRate + exciseConstUSD;
             totalTax = excise;
         }
         duty = 0;
         vat = 0;
     }
-    return { duty, excise, vat, totalTax };
+    return { duty, excise, vat, totalTax, dutyRate, exciseRate, vatRate, exciseType, exciseConstUSD, exciseFlatGYD };
 }
 
 function calculateTax() {
@@ -777,9 +892,9 @@ function calculateTax() {
     let taxResultsUSD = {};
 
     if (plate.value === 'G') {
-        taxResultsUSD = { duty: 0, excise: 2000, vat: 0, totalTax: 2000 };
+        taxResultsUSD = { duty: 0, excise: 2000, vat: 0, totalTax: 2000, dutyRate: 0, exciseRate: 0, vatRate: 0, exciseType: 'flat', exciseConstUSD: 0, exciseFlatGYD: 2000 * exchange_rate.value };
     } else if (fuel.value === 'Electric') {
-        taxResultsUSD = { duty: 0, excise: 0, vat: 0, totalTax: 0 };
+        taxResultsUSD = { duty: 0, excise: 0, vat: 0, totalTax: 0, dutyRate: 0, exciseRate: 0, vatRate: 0, exciseType: null, exciseConstUSD: 0, exciseFlatGYD: 0 };
     } else if (fuel.value === 'Gasoline') {
         taxResultsUSD = calculateGasoline();
     } else if (fuel.value === 'Diesel') {
@@ -792,7 +907,7 @@ function calculateTax() {
     const exciseGyd = taxResultsUSD.excise * exchange_rate.value;
     const vatGyd = taxResultsUSD.vat * exchange_rate.value;
     const totalTaxGyd = taxResultsUSD.totalTax * exchange_rate.value;
-    
+
     const totalTaxWithFee = totalTaxGyd + processingFee;
 
     results.value = {
@@ -803,6 +918,14 @@ function calculateTax() {
         processingFee,
         totalTax: totalTaxWithFee,
         totalPrice: cifGyd + totalTaxWithFee,
+        formulas: {
+            dutyRate: taxResultsUSD.dutyRate,
+            exciseRate: taxResultsUSD.exciseRate,
+            vatRate: taxResultsUSD.vatRate,
+            exciseType: taxResultsUSD.exciseType,
+            exciseConstUSD: taxResultsUSD.exciseConstUSD,
+            exciseFlatGYD: taxResultsUSD.exciseFlatGYD
+        }
     };
 }
 
