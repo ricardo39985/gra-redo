@@ -506,14 +506,16 @@ async function generateEstimatePdf(download = false) {
         } else if (formulas.exciseType === 'compound') {
             const constVal = formulas.exciseConstUSD * exchange_rate.value
             const base = results.value.cifValue + constVal
+            const constStr = `US$${formulas.exciseConstUSD.toLocaleString()}`
             formulaLines.push({
-                label: 'Excise Tax ((CIF + Const) × Excise Rate + Const) =',
+                label: `Excise Tax ((CIF + ${constStr}) × Excise Rate + ${constStr}) =`,
                 calc: `${formatCurrency(base)} × ${(formulas.exciseRate * 100).toFixed(2)}% + ${formatCurrency(constVal)} = ${formatCurrency(results.value.excise)}`
             })
         } else if (formulas.exciseType === 'flat') {
             const flat = displayCurrency.value === 'USD' ? formulas.exciseFlatGYD / exchange_rate.value : formulas.exciseFlatGYD
+            const flatConstStr = `GY$${formulas.exciseFlatGYD.toLocaleString()}`
             formulaLines.push({
-                label: 'Excise Tax (Flat Amount) =',
+                label: `Excise Tax (Flat Amount ${flatConstStr}) =`,
                 calc: `${formatCurrency(flat)}`
             })
         }
@@ -538,6 +540,8 @@ async function generateEstimatePdf(download = false) {
     disclaimerLines.forEach((line, i) => {
         drawText(line, width / 2, disclaimerY - i * 12, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) })
     })
+    const graUrl = 'https://www.gra.gov.gy/imports/motor-vehicle'
+    drawText(graUrl, width / 2, margin - 12, 10, { align: 'center', color: rgb(0, 0, 1) })
     const pdfBytes = await pdfDoc.save()
     const blob = new Blob([pdfBytes], { type: 'application/pdf' })
     const oldUrl = pdfPreviewUrl.value
