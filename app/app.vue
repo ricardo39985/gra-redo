@@ -491,28 +491,45 @@ async function generateEstimatePdf(download = false) {
     const formulaLines = []
     const formulas = results.value.formulas
     if (results.value.duty > 0 && formulas?.dutyRate) {
-        formulaLines.push(`Customs Duty = CIF ( ${formatCurrency(results.value.cifValue)} ) × ${(formulas.dutyRate * 100).toFixed(2)}% = ${formatCurrency(results.value.duty)}`)
+        formulaLines.push({
+            label: 'Customs Duty (CIF × Duty Rate) =',
+            calc: `${formatCurrency(results.value.cifValue)} × ${(formulas.dutyRate * 100).toFixed(2)}% = ${formatCurrency(results.value.duty)}`
+        })
     }
     if (results.value.excise > 0 && formulas?.exciseType) {
         if (formulas.exciseType === 'rate') {
             const base = results.value.cifValue + results.value.duty
-            formulaLines.push(`Excise Tax = (CIF + Duty) ( ${formatCurrency(base)} ) × ${(formulas.exciseRate * 100).toFixed(2)}% = ${formatCurrency(results.value.excise)}`)
+            formulaLines.push({
+                label: 'Excise Tax ((CIF + Duty) × Excise Rate) =',
+                calc: `${formatCurrency(base)} × ${(formulas.exciseRate * 100).toFixed(2)}% = ${formatCurrency(results.value.excise)}`
+            })
         } else if (formulas.exciseType === 'compound') {
             const constVal = formulas.exciseConstUSD * exchange_rate.value
             const base = results.value.cifValue + constVal
-            formulaLines.push(`Excise Tax = (CIF + ${formatCurrency(constVal)}) ( ${formatCurrency(base)} ) × ${(formulas.exciseRate * 100).toFixed(2)}% + ${formatCurrency(constVal)} = ${formatCurrency(results.value.excise)}`)
+            formulaLines.push({
+                label: 'Excise Tax ((CIF + Const) × Excise Rate + Const) =',
+                calc: `${formatCurrency(base)} × ${(formulas.exciseRate * 100).toFixed(2)}% + ${formatCurrency(constVal)} = ${formatCurrency(results.value.excise)}`
+            })
         } else if (formulas.exciseType === 'flat') {
             const flat = displayCurrency.value === 'USD' ? formulas.exciseFlatGYD / exchange_rate.value : formulas.exciseFlatGYD
-            formulaLines.push(`Excise Tax = ${formatCurrency(flat)} (flat)`)
+            formulaLines.push({
+                label: 'Excise Tax (Flat Amount) =',
+                calc: `${formatCurrency(flat)}`
+            })
         }
     }
     if (results.value.vat > 0 && formulas?.vatRate) {
         const base = results.value.cifValue + results.value.duty + results.value.excise
-        formulaLines.push(`VAT = (CIF + Duty + Excise) ( ${formatCurrency(base)} ) × ${(formulas.vatRate * 100).toFixed(2)}% = ${formatCurrency(results.value.vat)}`)
+        formulaLines.push({
+            label: 'VAT ((CIF + Duty + Excise) × VAT Rate) =',
+            calc: `${formatCurrency(base)} × ${(formulas.vatRate * 100).toFixed(2)}% = ${formatCurrency(results.value.vat)}`
+        })
     }
-    formulaLines.forEach(line => {
-        drawText(line, margin, y, 10)
-        y -= 14
+    formulaLines.forEach(({ label, calc }) => {
+        const labelWidth = fontBold.widthOfTextAtSize(label, 11)
+        drawText(label, margin, y, 11, { font: fontBold })
+        drawText(calc, margin + labelWidth + 4, y, 11)
+        y -= 18
     })
 
     const disclaimer = 'This estimate is for guidance only. Taxes are computed as customs duty, excise, VAT and a $1,000 processing fee applied to your CIF value.'
