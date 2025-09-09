@@ -1,484 +1,500 @@
 <template>
-  <v-app class="min-h-screen bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 relative overflow-x-hidden">
-    <!-- Decorative background (clipped; no horizontal overflow on mobile) -->
-    <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
-      <div class="hidden md:block absolute -top-40 -left-40 h-80 w-80 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-violet-400 to-sky-300 dark:from-violet-600 dark:to-sky-500"></div>
-      <div class="hidden md:block absolute -bottom-32 -right-32 h-96 w-96 rounded-full blur-3xl opacity-15 bg-gradient-to-tr from-emerald-300 to-cyan-300 dark:from-emerald-500 dark:to-cyan-500"></div>
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,0,0,0.02),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03),transparent_70%)]"></div>
-    </div>
+    <v-app
+        class="min-h-screen bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 relative overflow-x-hidden">
+        <!-- Decorative background (clipped; no horizontal overflow on mobile) -->
+        <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+            <div
+                class="hidden md:block absolute -top-40 -left-40 h-80 w-80 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-violet-400 to-sky-300 dark:from-violet-600 dark:to-sky-500">
+            </div>
+            <div
+                class="hidden md:block absolute -bottom-32 -right-32 h-96 w-96 rounded-full blur-3xl opacity-15 bg-gradient-to-tr from-emerald-300 to-cyan-300 dark:from-emerald-500 dark:to-cyan-500">
+            </div>
+            <div
+                class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,0,0,0.02),transparent_70%)] dark:bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03),transparent_70%)]">
+            </div>
+        </div>
 
-    <!-- App Bar -->
-    <v-app-bar
-      app
-      flat
-      density="compact"
-      class="app-bar-gradient backdrop-blur-lg border-b border-slate-900/5 dark:border-white/5"
-    >
-      <!-- Make title shrinkable & truncatable so it never pushes content sideways -->
-      <v-app-bar-title class="font-bold tracking-tight text-lg !p-0 min-w-0 flex-1 overflow-hidden">
-        <!-- Desktop title -->
-        <span class="hidden sm:inline bg-gradient-to-r from-violet-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent truncate">
-          GRA Tax Calculator
-        </span>
-        <!-- Mobile title -->
-        <span class="inline sm:hidden bg-gradient-to-r from-violet-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent truncate">
-          GRA Calc
-        </span>
-      </v-app-bar-title>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-        icon
-        @click="toggleTheme"
-        variant="text"
-        class="rounded-full ring-1 ring-black/5 hover:ring-black/10 transition-shadow shrink-0"
-      >
-        <v-tooltip activator="parent" location="bottom">Toggle theme</v-tooltip>
-        <v-icon>{{ isDark ? 'mdi-weather-night' : 'mdi-weather-sunny' }}</v-icon>
-      </v-btn>
-    </v-app-bar>
-
-    <!-- Disclaimer Dialog -->
-    <v-dialog v-model="showDisclaimer" persistent max-width="560">
-      <v-card class="rounded-2xl shadow-md ring-1 ring-slate-900/5 dark:ring-white/5 bg-slate-50/95 dark:bg-slate-900/95">
-        <v-card-title class="text-h6 font-semibold flex items-center gap-2 py-4">
-          <v-icon class="text-violet-500">mdi-information</v-icon>
-          Disclaimer
-        </v-card-title>
-        <v-card-text class="space-y-4 leading-relaxed text-sm py-0">
-          <p>
-            This calculator provides an estimate for informational purposes only and should not be
-            considered as financial or legal advice.
-          </p>
-          <p>
-            The figures are based on publicly available information from the Guyana Revenue Authority (GRA),
-            but accuracy or timeliness is not guaranteed. This tool is not affiliated with or endorsed by
-            the GRA.
-          </p>
-          <p>
-            The developers are not liable for errors, omissions, or any loss or damage arising from its use.
-            Please verify results with the GRA or a qualified tax professional.
-          </p>
-          <v-checkbox v-model="disclaimerChecked" color="primary" label="I understand and agree"></v-checkbox>
-        </v-card-text>
-        <v-card-actions class="px-6 pb-6 pt-4">
-          <v-spacer></v-spacer>
-          <v-btn color="primary" :disabled="!disclaimerChecked" @click="acceptDisclaimer" class="rounded-xl px-6 py-3 font-medium">
-            Continue
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-main>
-      <v-container class="py-12 md:py-16">
-        <v-row justify="center">
-          <v-col cols="12" md="10" lg="8" class="py-0">
-            <!-- Hero -->
-            <div class="text-center mb-10 md:mb-12">
-              <div
-                class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-white/50 dark:bg-slate-900/30 backdrop-blur-sm"
-              >
-                <v-icon size="16">mdi-car</v-icon> Motor Vehicle Imports · Guyana
-              </div>
-              <h1 class="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight">
-                Motor Vehicle
-                <span class="bg-gradient-to-r from-violet-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent">
-                  Tax Calculator
+        <!-- App Bar -->
+        <v-app-bar app flat density="compact"
+            class="app-bar-gradient backdrop-blur-lg border-b border-slate-900/5 dark:border-white/5">
+            <!-- Make title shrinkable & truncatable so it never pushes content sideways -->
+            <v-app-bar-title class="font-bold tracking-tight text-lg !p-0 min-w-0 flex-1 overflow-hidden">
+                <!-- Desktop title -->
+                <span
+                    class="hidden sm:inline bg-gradient-to-r from-violet-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent truncate">
+                    GRA Tax Calculator
                 </span>
-              </h1>
-              <p class="mt-3 text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                Calculate estimated taxes and total cost when importing a vehicle into Guyana.
-              </p>
-            </div>
+                <!-- Mobile title -->
+                <span
+                    class="inline sm:hidden bg-gradient-to-r from-violet-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent truncate">
+                    GRA Calc
+                </span>
+            </v-app-bar-title>
 
-            <!-- Error -->
-            <v-alert v-if="error" type="error" class="mb-8 rounded-xl" closable @click:close="error = null" variant="tonal">
-              {{ error }}
-            </v-alert>
+            <v-spacer></v-spacer>
 
-            <!-- Form Card -->
-            <v-card class="rounded-2xl shadow-md gradient-border bg-slate-50/60 dark:bg-slate-900/50 backdrop-blur-sm ring-1 ring-slate-900/5 dark:ring-white/5">
-              <v-card-text class="p-6 md:p-8">
-                <div class="flex items-center justify-between mb-6">
-                  <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Display Currency</div>
-                  <v-btn-toggle
-                    v-model="displayCurrency"
-                    mandatory
-                    color="primary"
-                    variant="outlined"
-                    density="compact"
-                    class="rounded-full bg-slate-100/50 dark:bg-slate-800/50 p-0.5 ring-1 ring-inset ring-slate-900/5 dark:ring-white/5"
-                  >
-                    <v-btn value="GYD" class="text-none rounded-full px-4">GYD</v-btn>
-                    <v-btn value="USD" class="text-none rounded-full px-4">USD</v-btn>
-                  </v-btn-toggle>
-                </div>
+            <v-btn icon @click="toggleTheme" variant="text"
+                class="rounded-full ring-1 ring-black/5 hover:ring-black/10 transition-shadow shrink-0">
+                <v-tooltip activator="parent" location="bottom">Toggle theme</v-tooltip>
+                <v-icon>{{ isDark ? 'mdi-weather-night' : 'mdi-weather-sunny' }}</v-icon>
+            </v-btn>
+        </v-app-bar>
 
-                <!-- Propulsion -->
-                <div class="mb-8">
-                  <div class="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">Propulsion</div>
-                  <v-btn-toggle
-                    v-model="fuel"
-                    color="primary"
-                    variant="outlined"
-                    divided
-                    class="w-full rounded-xl ring-1 ring-inset ring-slate-900/5 dark:ring-white/5"
-                  >
-                    <v-btn value="Gasoline" class="w-1/3 text-none py-4 font-medium">Gasoline</v-btn>
-                    <v-btn value="Diesel" class="w-1/3 text-none py-4 font-medium" :disabled="vehicle_type === 'Bike'">Diesel</v-btn>
-                    <v-btn value="Electric" class="w-1/3 text-none py-4 font-medium" :disabled="vehicle_type === 'Bus'">Electric</v-btn>
-                  </v-btn-toggle>
-                </div>
-
-                <!-- Inputs grid -->
-                <v-row dense class="-mx-2">
-                  <v-col cols="12" md="6" class="px-2">
-                    <v-select
-                      density="compact"
-                      v-model="vehicle_type"
-                      :items="['Car', 'SUV', 'Van', 'Bus', 'Single Cab', 'Double Cab', { title: 'Motorcycle', value: 'Bike' }]"
-                      label="Vehicle Type"
-                      variant="outlined"
-                      class="rounded-xl"
-                    />
-                  </v-col>
-
-                  <v-col cols="6" md="3" class="px-2">
-                    <v-menu v-model="yearMenu" :close-on-content-click="false" location="bottom">
-                      <template #activator="{ props }">
-                        <v-text-field
-                          density="compact"
-                          v-model="vehicleYear"
-                          label="Vehicle Year"
-                          placeholder="e.g., 2018"
-                          variant="outlined"
-                          class="rounded-xl"
-                          readonly
-                          v-bind="props"
-                        />
-                      </template>
-                      <v-date-picker
-                        v-model="dateForYearPicker"
-                        :view-mode="yearPickerViewMode"
-                        @update:view-mode="yearPickerViewMode = $event"
-                        @update:year="selectYear"
-                        hide-header
-                        color="primary"
-                        :max="new Date().toISOString()"
-                      />
-                    </v-menu>
-                  </v-col>
-
-                  <v-col cols="6" md="3" class="px-2" v-if="isPlateApplicable">
-                    <v-select
-                      density="compact"
-                      v-model="plate"
-                      :items="plateItems"
-                      label="Plate Type"
-                      variant="outlined"
-                      class="rounded-xl"
-                    />
-                  </v-col>
-
-                  <v-col cols="12" md="6" class="px-2">
-                    <v-text-field
-                      density="compact"
-                      v-if="fuel === 'Electric'"
-                      v-model.number="cc"
-                      label="Engine Capacity (KW)"
-                      type="number"
-                      placeholder="Enter KW"
-                      variant="outlined"
-                      class="rounded-xl"
-                    />
-                    <v-text-field
-                      density="compact"
-                      v-else
-                      v-model.number="cc"
-                      label="Engine Capacity (CC)"
-                      type="number"
-                      placeholder="Enter CC"
-                      variant="outlined"
-                      class="rounded-xl"
-                    />
-                  </v-col>
-
-                  <v-col cols="12" md="6" class="px-2">
-                    <v-text-field
-                      density="compact"
-                      v-model.number="cif"
-                      label="CIF Value (USD)"
-                      type="number"
-                      prefix="$"
-                      variant="outlined"
-                      class="rounded-xl"
-                    />
-                  </v-col>
-
-                  <v-col cols="12" md="6" class="px-2">
-                    <v-text-field
-                      density="compact"
-                      v-model.number="exchange_rate"
-                      label="Exchange Rate (GYD to USD)"
-                      type="number"
-                      prefix="$"
-                      variant="outlined"
-                      class="rounded-xl"
-                    />
-                  </v-col>
-                </v-row>
-              </v-card-text>
-
-              <v-card-actions class="p-6 md:p-8 pt-0 gap-4 justify-end">
-                <v-btn
-                  size="large"
-                  :disabled="!isFormValid"
-                  @click="calculateTax"
-                  color="primary"
-                  class="flex-grow sm:flex-grow-0 sm:w-48 rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 transition-all"
-                >
-                  <v-icon class="mr-2">mdi-calculator</v-icon>
-                  Calculate Tax
-                </v-btn>
-                <v-btn
-                  size="large"
-                  @click="resetForm"
-                  variant="tonal"
-                  class="flex-grow sm:flex-grow-0 sm:w-48 rounded-xl h-12 text-base font-semibold shadow-sm hover:shadow-md transition-shadow"
-                >
-                  Clear
-                </v-btn>
-              </v-card-actions>
+        <!-- Disclaimer Dialog -->
+        <v-dialog v-model="showDisclaimer" persistent max-width="560">
+            <v-card
+                class="rounded-2xl shadow-md ring-1 ring-slate-900/5 dark:ring-white/5 bg-slate-50/95 dark:bg-slate-900/95">
+                <v-card-title class="text-h6 font-semibold flex items-center gap-2 py-4">
+                    <v-icon class="text-violet-500">mdi-information</v-icon>
+                    Disclaimer
+                </v-card-title>
+                <v-card-text class="space-y-4 leading-relaxed text-sm py-0">
+                    <p>
+                        This calculator provides an estimate for informational purposes only and should not be
+                        considered as financial or legal advice.
+                    </p>
+                    <p>
+                        The figures are based on publicly available information from the Guyana Revenue Authority (GRA),
+                        but accuracy or timeliness is not guaranteed. This tool is not affiliated with or endorsed by
+                        the GRA.
+                    </p>
+                    <p>
+                        The developers are not liable for errors, omissions, or any loss or damage arising from its use.
+                        Please verify results with the GRA or a qualified tax professional.
+                    </p>
+                    <v-checkbox v-model="disclaimerChecked" color="primary" label="I understand and agree"></v-checkbox>
+                </v-card-text>
+                <v-card-actions class="px-6 pb-6 pt-4">
+                    <v-spacer></v-spacer>
+                    <v-btn color="primary" :disabled="!disclaimerChecked" @click="acceptDisclaimer"
+                        class="rounded-xl px-6 py-3 font-medium">
+                        Continue
+                    </v-btn>
+                </v-card-actions>
             </v-card>
+        </v-dialog>
 
-            <!-- Results / Estimate -->
-            <div v-if="results" ref="resultsRef" class="mt-10 md:mt-12">
-              <v-tabs
-                v-model="activeTab"
-                grow
-                class="rounded-xl ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm"
-              >
-                <v-tab value="results" class="text-none font-medium">Results</v-tab>
-                <v-tab value="estimate" class="text-none font-medium">Print Estimate</v-tab>
-              </v-tabs>
-
-              <v-window v-model="activeTab" class="mt-6">
-                <!-- Results Tab -->
-                <v-window-item value="results">
-                  <v-card class="pa-0 rounded-2xl shadow-md bg-gradient-to-b from-slate-50/60 to-slate-50/30 dark:from-slate-900/60 dark:to-slate-900/30 backdrop-blur-sm ring-1 ring-slate-900/5 dark:ring-white/5">
-                    <v-card-title class="font-bold text-center text-h5 py-6">Calculation Results</v-card-title>
-                    <v-card-text class="pb-6 px-4 md:px-8">
-                      <v-row class="mb-4" justify="center" no-gutters>
-                        <v-col cols="12" md="4" class="p-3">
-                          <v-sheet class="stat-card rounded-2xl p-5 text-center shadow-sm ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm">
-                            <div class="stat-title">CIF Value</div>
-                            <div class="stat-value tabular-nums" ref="cifRef" :title="formatCurrency(results.cifValue)">
-                              {{ formatCurrency(results.cifValue) }}
+        <v-main>
+            <v-container class="py-12 md:py-16">
+                <v-row justify="center">
+                    <v-col cols="12" md="10" lg="8" class="py-0">
+                        <!-- Hero -->
+                        <div class="text-center mb-10 md:mb-12">
+                            <div
+                                class="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-white/50 dark:bg-slate-900/30 backdrop-blur-sm">
+                                <v-icon size="16">mdi-car</v-icon> Motor Vehicle Imports · Guyana
                             </div>
-                          </v-sheet>
-                        </v-col>
-                        <v-col cols="12" md="4" class="p-3">
-                          <v-sheet class="stat-card rounded-2xl p-5 text-center shadow-sm ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm">
-                            <div class="stat-title">Total Tax</div>
-                            <div class="stat-value tabular-nums" ref="taxRef" :title="formatCurrency(results.totalTax)">
-                              {{ formatCurrency(results.totalTax) }}
-                            </div>
-                          </v-sheet>
-                        </v-col>
-                        <v-col cols="12" md="4" class="p-3">
-                          <v-sheet class="stat-card rounded-2xl p-5 text-center shadow-sm ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm">
-                            <div class="stat-title">Total Cost</div>
-                            <div class="stat-value tabular-nums" ref="totalRef" :title="formatCurrency(results.totalPrice)">
-                              {{ formatCurrency(results.totalPrice) }}
-                            </div>
-                          </v-sheet>
-                        </v-col>
-                      </v-row>
-
-                      <v-divider class="my-6 opacity-50"></v-divider>
-
-                      <v-list class="bg-transparent tax-breakdown" lines="one">
-                        <v-list-item prepend-icon="mdi-percent-outline" class="py-3">
-                          <v-list-item-title class="font-medium">Customs Duty</v-list-item-title>
-                          <template #append>
-                            <span class="font-semibold tabular-nums">{{ formatCurrency(results.duty) }}</span>
-                          </template>
-                        </v-list-item>
-                        <v-list-item prepend-icon="mdi-percent-outline" class="py-3">
-                          <v-list-item-title class="font-medium">Excise Tax</v-list-item-title>
-                          <template #append>
-                            <span class="font-semibold tabular-nums">{{ formatCurrency(results.excise) }}</span>
-                          </template>
-                        </v-list-item>
-                        <v-list-item prepend-icon="mdi-percent-outline" class="py-3">
-                          <v-list-item-title class="font-medium">VAT (14%)</v-list-item-title>
-                          <template #append>
-                            <span class="font-semibold tabular-nums">{{ formatCurrency(results.vat) }}</span>
-                          </template>
-                        </v-list-item>
-                        <v-divider class="my-3 opacity-50"></v-divider>
-                        <v-list-item prepend-icon="mdi-cog-outline" class="py-3">
-                          <v-list-item-title class="font-medium">Processing Fee</v-list-item-title>
-                          <template #append>
-                            <span class="font-semibold tabular-nums">{{ formatCurrency(results.processingFee) }}</span>
-                          </template>
-                        </v-list-item>
-                      </v-list>
-                    </v-card-text>
-                  </v-card>
-                </v-window-item>
-
-                <!-- Estimate Tab -->
-                <v-window-item value="estimate">
-                  <v-card class="rounded-2xl shadow-md bg-slate-50/60 dark:bg-slate-900/50 backdrop-blur-sm ring-1 ring-slate-900/5 dark:ring-white/5 p-6 md:p-8">
-                    <v-row dense>
-                      <v-col cols="12" md="5">
-                        <v-form>
-                          <v-card class="mb-6 rounded-xl shadow-sm bg-slate-50/50 dark:bg-slate-900/30 ring-1 ring-inset ring-slate-900/5 dark:ring-white/5" variant="tonal">
-                            <v-card-title class="text-subtitle-1 font-bold py-4">Vehicle Details</v-card-title>
-                            <v-card-text class="pt-0">
-                              <v-text-field density="compact" v-model="estimateInfo.vehicleYear" label="Year" type="number" variant="outlined" class="rounded-xl" />
-                              <v-text-field density="compact" v-model="estimateInfo.vehicleMake" label="Make" variant="outlined" class="rounded-xl" />
-                              <v-text-field density="compact" v-model="estimateInfo.vehicleModel" label="Model" variant="outlined" class="rounded-xl" />
-                            </v-card-text>
-                          </v-card>
-
-                          <v-card class="mb-6 rounded-xl shadow-sm bg-slate-50/50 dark:bg-slate-900/30 ring-1 ring-inset ring-slate-900/5 dark:ring-white/5" variant="tonal">
-                            <v-card-title class="text-subtitle-1 font-bold py-4">Customer Details</v-card-title>
-                            <v-card-text class="pt-0">
-                              <v-text-field density="compact" v-model="estimateInfo.customerFirstName" label="First Name" variant="outlined" class="rounded-xl" />
-                              <v-text-field density="compact" v-model="estimateInfo.customerLastName" label="Last Name" variant="outlined" class="rounded-xl" />
-                              <v-text-field density="compact" v-model="estimateInfo.customerEmail" label="Email" type="email" variant="outlined" class="rounded-xl" />
-                              <v-text-field density="compact" v-model="estimateInfo.customerPhone" label="Phone" type="tel" variant="outlined" class="rounded-xl" />
-                            </v-card-text>
-                          </v-card>
-
-                          <v-card class="rounded-xl shadow-sm bg-slate-50/50 dark:bg-slate-900/30 ring-1 ring-inset ring-slate-900/5 dark:ring-white/5" variant="tonal">
-                            <v-card-title class="text-subtitle-1 font-bold py-4">Company Details</v-card-title>
-                            <v-card-text class="pt-0">
-                              <v-text-field density="compact" v-model="estimateInfo.companyName" label="Name" variant="outlined" class="rounded-xl" />
-                              <v-text-field density="compact" v-model="estimateInfo.companyAddress" label="Address" variant="outlined" class="rounded-xl" />
-                              <v-text-field density="compact" v-model="estimateInfo.companyEmail" label="Email" type="email" variant="outlined" class="rounded-xl" />
-                              <v-text-field density="compact" v-model="estimateInfo.companyPhone" label="Phone" variant="outlined" class="rounded-xl" />
-                              <v-file-input density="compact" label="Logo" accept="image/*" @change="onLogoChange" variant="outlined" class="rounded-xl" />
-                              <v-img v-if="estimateInfo.companyLogo" :src="estimateInfo.companyLogo" class="mt-3 rounded-lg ring-1 ring-slate-900/5 dark:ring-white/5" max-height="100" contain />
-                            </v-card-text>
-                          </v-card>
-                        </v-form>
-                      </v-col>
-
-                      <v-col cols="12" md="7" class="d-flex flex-column">
-                        <v-sheet class="flex-grow d-flex rounded-2xl ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm min-h-[600px] overflow-hidden">
-                          <iframe v-if="pdfPreviewUrl" :src="pdfPreviewSrc" class="flex-grow rounded-2xl" style="border: none;" height="100%"></iframe>
-                          <div v-else class="flex items-center justify-center flex-grow text-medium-emphasis">Preview will appear here</div>
-                        </v-sheet>
-                        <div class="text-center mt-6">
-                          <v-btn
-                            size="large"
-                            color="primary"
-                            prepend-icon="mdi-download"
-                            class="w-full rounded-xl h-12 font-semibold shadow-md hover:shadow-lg transition-shadow"
-                            @click="downloadEstimatePdf"
-                            :disabled="!pdfPreviewUrl"
-                          >
-                            Download PDF
-                          </v-btn>
+                            <h1 class="mt-4 text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight">
+                                Motor Vehicle
+                                <span
+                                    class="bg-gradient-to-r from-violet-600 via-sky-600 to-emerald-600 bg-clip-text text-transparent">
+                                    Tax Calculator
+                                </span>
+                            </h1>
+                            <p
+                                class="mt-3 text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                                Calculate estimated taxes and total cost when importing a vehicle into Guyana.
+                            </p>
                         </div>
-                      </v-col>
-                    </v-row>
-                  </v-card>
-                </v-window-item>
-              </v-window>
-            </div>
 
-            <!-- Footer -->
-            <footer class="text-center text-sm text-slate-600 dark:text-slate-300 py-12 mt-12 border-t border-slate-900/5 dark:border-white/5">
-              <p class="leading-relaxed">
-                This calculator is for estimation purposes only and is not affiliated with the
-                <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener" class="text-primary font-medium hover:underline">Guyana Revenue Authority (GRA)</a>.
-                All calculations should be verified with the GRA or a qualified professional.
-              </p>
-              <p class="mt-3">
-                For official information, please visit the
-                <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener" class="text-primary font-medium hover:underline">GRA Motor Vehicle Imports Page</a>.
-              </p>
-            </footer>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-main>
-  </v-app>
+                        <!-- Error -->
+                        <v-alert v-if="error" type="error" class="mb-8 rounded-xl" closable @click:close="error = null"
+                            variant="tonal">
+                            {{ error }}
+                        </v-alert>
+
+                        <!-- Form Card -->
+                        <v-card
+                            class="rounded-2xl shadow-md gradient-border bg-slate-50/60 dark:bg-slate-900/50 backdrop-blur-sm ring-1 ring-slate-900/5 dark:ring-white/5">
+                            <v-card-text class="p-6 md:p-8">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div class="text-sm font-medium text-slate-600 dark:text-slate-300">Display Currency
+                                    </div>
+                                    <v-btn-toggle v-model="displayCurrency" mandatory color="primary" variant="outlined"
+                                        density="compact"
+                                        class="rounded-full bg-slate-100/50 dark:bg-slate-800/50 p-0.5 ring-1 ring-inset ring-slate-900/5 dark:ring-white/5">
+                                        <v-btn value="GYD" class="text-none rounded-full px-4">GYD</v-btn>
+                                        <v-btn value="USD" class="text-none rounded-full px-4">USD</v-btn>
+                                    </v-btn-toggle>
+                                </div>
+
+                                <!-- Propulsion -->
+                                <div class="mb-8">
+                                    <div class="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                        Propulsion</div>
+                                    <v-btn-toggle v-model="fuel" color="primary" variant="outlined" divided
+                                        class="w-full rounded-xl ring-1 ring-inset ring-slate-900/5 dark:ring-white/5">
+                                        <v-btn value="Gasoline"
+                                            class="w-1/3 text-none py-4 font-medium">Gasoline</v-btn>
+                                        <v-btn value="Diesel" class="w-1/3 text-none py-4 font-medium"
+                                            :disabled="vehicle_type === 'Bike'">Diesel</v-btn>
+                                        <v-btn value="Electric" class="w-1/3 text-none py-4 font-medium"
+                                            :disabled="vehicle_type === 'Bus'">Electric</v-btn>
+                                    </v-btn-toggle>
+                                </div>
+
+                                <!-- Inputs grid -->
+                                <v-row dense class="-mx-2">
+                                    <v-col cols="12" md="6" class="px-2">
+                                        <v-select density="compact" v-model="vehicle_type"
+                                            :items="['Car', 'SUV', 'Van', 'Bus', 'Single Cab', 'Double Cab', { title: 'Motorcycle', value: 'Bike' }]"
+                                            label="Vehicle Type" variant="outlined" class="rounded-xl" />
+                                    </v-col>
+
+                                    <v-col cols="6" md="3" class="px-2">
+                                        <v-menu v-model="yearMenu" :close-on-content-click="false" location="bottom">
+                                            <template #activator="{ props }">
+                                                <v-text-field density="compact" v-model="vehicleYear"
+                                                    label="Vehicle Year" placeholder="e.g., 2018" variant="outlined"
+                                                    class="rounded-xl" readonly v-bind="props" />
+                                            </template>
+                                            <v-date-picker v-model="dateForYearPicker" :view-mode="yearPickerViewMode"
+                                                @update:view-mode="yearPickerViewMode = $event"
+                                                @update:year="selectYear" hide-header color="primary"
+                                                :max="new Date().toISOString()" />
+                                        </v-menu>
+                                    </v-col>
+
+                                    <v-col cols="6" md="3" class="px-2" v-if="isPlateApplicable">
+                                        <v-select density="compact" v-model="plate" :items="plateItems"
+                                            label="Plate Type" variant="outlined" class="rounded-xl" />
+                                    </v-col>
+
+                                    <v-col cols="12" md="6" class="px-2">
+                                        <v-text-field density="compact" v-if="fuel === 'Electric'" v-model.number="cc"
+                                            label="Engine Capacity (KW)" type="number" placeholder="Enter KW"
+                                            variant="outlined" class="rounded-xl" />
+                                        <v-text-field density="compact" v-else v-model.number="cc"
+                                            label="Engine Capacity (CC)" type="number" placeholder="Enter CC"
+                                            variant="outlined" class="rounded-xl" />
+                                    </v-col>
+
+                                    <v-col cols="12" md="6" class="px-2">
+                                        <v-text-field density="compact" v-model.number="cif" label="CIF Value (USD)"
+                                            type="number" prefix="$" variant="outlined" class="rounded-xl" />
+                                    </v-col>
+
+                                    <v-col cols="12" md="6" class="px-2">
+                                        <v-text-field density="compact" v-model.number="exchange_rate"
+                                            label="Exchange Rate (GYD to USD)" type="number" prefix="$"
+                                            variant="outlined" class="rounded-xl" />
+                                    </v-col>
+                                </v-row>
+                            </v-card-text>
+
+                            <v-card-actions class="p-6 md:p-8 pt-0 gap-4 justify-end">
+                                <v-btn size="large" :disabled="!isFormValid" @click="calculateTax" color="primary"
+                                    class="flex-grow sm:flex-grow-0 sm:w-48 rounded-xl h-12 text-base font-semibold shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 transition-all">
+                                    <v-icon class="mr-2">mdi-calculator</v-icon>
+                                    Calculate Tax
+                                </v-btn>
+                                <v-btn size="large" @click="resetForm" variant="tonal"
+                                    class="flex-grow sm:flex-grow-0 sm:w-48 rounded-xl h-12 text-base font-semibold shadow-sm hover:shadow-md transition-shadow">
+                                    Clear
+                                </v-btn>
+                            </v-card-actions>
+                        </v-card>
+
+                        <!-- Results / Estimate -->
+                        <div v-if="results" ref="resultsRef" class="mt-10 md:mt-12">
+                            <v-tabs v-model="activeTab" grow
+                                class="rounded-xl ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm">
+                                <v-tab value="results" class="text-none font-medium">Results</v-tab>
+                                <v-tab value="estimate" class="text-none font-medium">Print Estimate</v-tab>
+                            </v-tabs>
+
+                            <v-window v-model="activeTab" class="mt-6">
+                                <!-- Results Tab -->
+                                <v-window-item value="results">
+                                    <v-card
+                                        class="pa-0 rounded-2xl shadow-md bg-gradient-to-b from-slate-50/60 to-slate-50/30 dark:from-slate-900/60 dark:to-slate-900/30 backdrop-blur-sm ring-1 ring-slate-900/5 dark:ring-white/5">
+                                        <v-card-title class="font-bold text-center text-h5 py-6">Calculation
+                                            Results</v-card-title>
+                                        <v-card-text class="pb-6 px-4 md:px-8">
+                                            <v-row class="mb-4" justify="center" no-gutters>
+                                                <v-col cols="12" md="4" class="p-3">
+                                                    <v-sheet
+                                                        class="stat-card rounded-2xl p-5 text-center shadow-sm ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm">
+                                                        <div class="stat-title">CIF Value</div>
+                                                        <div class="stat-value tabular-nums" ref="cifRef"
+                                                            :title="formatCurrency(results.cifValue)">
+                                                            {{ formatCurrency(results.cifValue) }}
+                                                        </div>
+                                                    </v-sheet>
+                                                </v-col>
+                                                <v-col cols="12" md="4" class="p-3">
+                                                    <v-sheet
+                                                        class="stat-card rounded-2xl p-5 text-center shadow-sm ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm">
+                                                        <div class="stat-title">Total Tax</div>
+                                                        <div class="stat-value tabular-nums" ref="taxRef"
+                                                            :title="formatCurrency(results.totalTax)">
+                                                            {{ formatCurrency(results.totalTax) }}
+                                                        </div>
+                                                    </v-sheet>
+                                                </v-col>
+                                                <v-col cols="12" md="4" class="p-3">
+                                                    <v-sheet
+                                                        class="stat-card rounded-2xl p-5 text-center shadow-sm ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm">
+                                                        <div class="stat-title">Total Cost</div>
+                                                        <div class="stat-value tabular-nums" ref="totalRef"
+                                                            :title="formatCurrency(results.totalPrice)">
+                                                            {{ formatCurrency(results.totalPrice) }}
+                                                        </div>
+                                                    </v-sheet>
+                                                </v-col>
+                                            </v-row>
+
+                                            <v-divider class="my-6 opacity-50"></v-divider>
+
+                                            <v-list class="bg-transparent tax-breakdown" lines="one">
+                                                <v-list-item prepend-icon="mdi-percent-outline" class="py-3">
+                                                    <v-list-item-title class="font-medium">Customs
+                                                        Duty</v-list-item-title>
+                                                    <template #append>
+                                                        <span class="font-semibold tabular-nums">{{
+                                                            formatCurrency(results.duty) }}</span>
+                                                    </template>
+                                                </v-list-item>
+                                                <v-list-item prepend-icon="mdi-percent-outline" class="py-3">
+                                                    <v-list-item-title class="font-medium">Excise
+                                                        Tax</v-list-item-title>
+                                                    <template #append>
+                                                        <span class="font-semibold tabular-nums">{{
+                                                            formatCurrency(results.excise) }}</span>
+                                                    </template>
+                                                </v-list-item>
+                                                <v-list-item prepend-icon="mdi-percent-outline" class="py-3">
+                                                    <v-list-item-title class="font-medium">VAT (14%)</v-list-item-title>
+                                                    <template #append>
+                                                        <span class="font-semibold tabular-nums">{{
+                                                            formatCurrency(results.vat) }}</span>
+                                                    </template>
+                                                </v-list-item>
+                                                <v-divider class="my-3 opacity-50"></v-divider>
+                                                <v-list-item prepend-icon="mdi-cog-outline" class="py-3">
+                                                    <v-list-item-title class="font-medium">Processing
+                                                        Fee</v-list-item-title>
+                                                    <template #append>
+                                                        <span class="font-semibold tabular-nums">{{
+                                                            formatCurrency(results.processingFee) }}</span>
+                                                    </template>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-card-text>
+                                    </v-card>
+                                </v-window-item>
+
+                                <!-- Estimate Tab -->
+                                <v-window-item value="estimate">
+                                    <v-card
+                                        class="rounded-2xl shadow-md bg-slate-50/60 dark:bg-slate-900/50 backdrop-blur-sm ring-1 ring-slate-900/5 dark:ring-white/5 p-6 md:p-8">
+                                        <v-row dense>
+                                            <v-col cols="12" md="5">
+                                                <v-form>
+                                                    <v-card
+                                                        class="mb-6 rounded-xl shadow-sm bg-slate-50/50 dark:bg-slate-900/30 ring-1 ring-inset ring-slate-900/5 dark:ring-white/5"
+                                                        variant="tonal">
+                                                        <v-card-title class="text-subtitle-1 font-bold py-4">Vehicle
+                                                            Details</v-card-title>
+                                                        <v-card-text class="pt-0">
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.vehicleYear" label="Year"
+                                                                type="number" variant="outlined" class="rounded-xl" />
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.vehicleMake" label="Make"
+                                                                variant="outlined" class="rounded-xl" />
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.vehicleModel" label="Model"
+                                                                variant="outlined" class="rounded-xl" />
+                                                        </v-card-text>
+                                                    </v-card>
+
+                                                    <v-card
+                                                        class="mb-6 rounded-xl shadow-sm bg-slate-50/50 dark:bg-slate-900/30 ring-1 ring-inset ring-slate-900/5 dark:ring-white/5"
+                                                        variant="tonal">
+                                                        <v-card-title class="text-subtitle-1 font-bold py-4">Customer
+                                                            Details</v-card-title>
+                                                        <v-card-text class="pt-0">
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.customerFirstName"
+                                                                label="First Name" variant="outlined"
+                                                                class="rounded-xl" />
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.customerLastName"
+                                                                label="Last Name" variant="outlined"
+                                                                class="rounded-xl" />
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.customerEmail" label="Email"
+                                                                type="email" variant="outlined" class="rounded-xl" />
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.customerPhone" label="Phone"
+                                                                type="tel" variant="outlined" class="rounded-xl" />
+                                                        </v-card-text>
+                                                    </v-card>
+
+                                                    <v-card
+                                                        class="rounded-xl shadow-sm bg-slate-50/50 dark:bg-slate-900/30 ring-1 ring-inset ring-slate-900/5 dark:ring-white/5"
+                                                        variant="tonal">
+                                                        <v-card-title class="text-subtitle-1 font-bold py-4">Company
+                                                            Details</v-card-title>
+                                                        <v-card-text class="pt-0">
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.companyName" label="Name"
+                                                                variant="outlined" class="rounded-xl" />
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.companyAddress" label="Address"
+                                                                variant="outlined" class="rounded-xl" />
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.companyEmail" label="Email"
+                                                                type="email" variant="outlined" class="rounded-xl" />
+                                                            <v-text-field density="compact"
+                                                                v-model="estimateInfo.companyPhone" label="Phone"
+                                                                variant="outlined" class="rounded-xl" />
+                                                            <v-file-input density="compact" label="Logo"
+                                                                accept="image/*" @change="onLogoChange"
+                                                                variant="outlined" class="rounded-xl" />
+                                                            <v-img v-if="estimateInfo.companyLogo"
+                                                                :src="estimateInfo.companyLogo"
+                                                                class="mt-3 rounded-lg ring-1 ring-slate-900/5 dark:ring-white/5"
+                                                                max-height="100" contain />
+                                                        </v-card-text>
+                                                    </v-card>
+                                                </v-form>
+                                            </v-col>
+
+                                            <v-col cols="12" md="7" class="d-flex flex-column">
+                                                <v-sheet
+                                                    class="flex-grow d-flex rounded-2xl ring-1 ring-inset ring-slate-900/5 dark:ring-white/5 bg-slate-50/50 dark:bg-slate-900/40 backdrop-blur-sm min-h-[600px] overflow-hidden">
+                                                    <iframe v-if="pdfPreviewUrl" :src="pdfPreviewSrc"
+                                                        class="flex-grow rounded-2xl" style="border: none;"
+                                                        height="100%"></iframe>
+                                                    <div v-else
+                                                        class="flex items-center justify-center flex-grow text-medium-emphasis">
+                                                        Preview
+                                                        will appear here</div>
+                                                </v-sheet>
+                                                <div class="text-center mt-6">
+                                                    <v-btn size="large" color="primary" prepend-icon="mdi-download"
+                                                        class="w-full rounded-xl h-12 font-semibold shadow-md hover:shadow-lg transition-shadow"
+                                                        @click="downloadEstimatePdf" :disabled="!pdfPreviewUrl">
+                                                        Download PDF
+                                                    </v-btn>
+                                                </div>
+                                            </v-col>
+                                        </v-row>
+                                    </v-card>
+                                </v-window-item>
+                            </v-window>
+                        </div>
+
+                        <!-- Footer -->
+                        <footer
+                            class="text-center text-sm text-slate-600 dark:text-slate-300 py-12 mt-12 border-t border-slate-900/5 dark:border-white/5">
+                            <p class="leading-relaxed">
+                                This calculator is for estimation purposes only and is not affiliated with the
+                                <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
+                                    class="text-primary font-medium hover:underline">Guyana Revenue Authority (GRA)</a>.
+                                All calculations should be verified with the GRA or a qualified professional.
+                            </p>
+                            <p class="mt-3">
+                                For official information, please visit the
+                                <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
+                                    class="text-primary font-medium hover:underline">GRA Motor Vehicle Imports Page</a>.
+                            </p>
+                            <p class="mt-3">
+                                Contact <a href="https://wa.me/5927366642" target="_blank"
+                                    rel="noopener" class="text-primary font-medium hover:underline">Ricardo Persaud</a> for feedback or inquiries.
+                            </p>
+                        </footer>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-main>
+    </v-app>
 </template>
 
 <style scoped>
 .app-bar-gradient {
-  background: linear-gradient(90deg, rgb(241 245 249 / 0.8), rgb(241 245 249 / 0.4));
+    background: linear-gradient(90deg, rgb(241 245 249 / 0.8), rgb(241 245 249 / 0.4));
 }
+
 :root.dark .app-bar-gradient {
-  background: linear-gradient(90deg, rgba(2, 6, 23, 0.80), rgba(2, 6, 23, 0.40));
+    background: linear-gradient(90deg, rgba(2, 6, 23, 0.80), rgba(2, 6, 23, 0.40));
 }
 
 /* Optional gradient border for the main card */
 .gradient-border {
-  position: relative;
+    position: relative;
 }
+
 .gradient-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(167, 139, 250, 0.8), rgba(56, 189, 248, 0.8), rgba(16, 185, 129, 0.8));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.8), rgba(56, 189, 248, 0.8), rgba(16, 185, 129, 0.8));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
 
 /* Stat styles */
 .stat-title {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: rgb(71 85 105);
-  letter-spacing: 0.025em;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(71 85 105);
+    letter-spacing: 0.025em;
 }
+
 :root.dark .stat-title {
-  color: rgb(203 213 225);
+    color: rgb(203 213 225);
 }
+
 .stat-value {
-  margin-top: 0.5rem;
-  font-size: 1.875rem;
-  font-weight: 800;
-  line-height: 1.1;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  background-image: linear-gradient(135deg, #7c3aed, #0284c7, #059669);
+    margin-top: 0.5rem;
+    font-size: 1.875rem;
+    font-weight: 800;
+    line-height: 1.1;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    background-image: linear-gradient(135deg, #7c3aed, #0284c7, #059669);
 }
+
 @media (min-width: 768px) {
-  .stat-value { font-size: 2.5rem; }
+    .stat-value {
+        font-size: 2.5rem;
+    }
 }
 
 /* Softer corners + taller inputs prevent label clipping */
 :deep(.v-field) {
-  border-radius: 12px !important;
+    border-radius: 12px !important;
 }
+
 :deep(.v-field--variant-outlined .v-field__input) {
-  padding-top: 12px !important;
-  padding-bottom: 12px !important;
-  min-height: 52px; /* avoids cut-off floating labels */
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+    min-height: 52px;
+    /* avoids cut-off floating labels */
 }
+
 :deep(.v-field-label) {
-  transform: translateY(1px);
-  font-weight: 500;
+    transform: translateY(1px);
+    font-weight: 500;
 }
 
 /* Mobile adjustments */
 @media (max-width: 640px) {
-  :deep(.v-field--variant-outlined .v-field__input) { min-height: 48px; }
-  .stat-value { font-size: 1.5rem !important; }
+    :deep(.v-field--variant-outlined .v-field__input) {
+        min-height: 48px;
+    }
+
+    .stat-value {
+        font-size: 1.5rem !important;
+    }
 }
 </style>
 
