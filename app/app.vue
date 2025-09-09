@@ -5,9 +5,6 @@
                 GRA Tax Calculator
             </v-app-bar-title>
             <v-spacer></v-spacer>
-            <v-btn @click="toggleCurrency" variant="text" class="text-none" style="min-width: 80px;">
-                {{ displayCurrency }}
-            </v-btn>
             <v-btn icon @click="toggleTheme" variant="text">
                 <v-icon>{{ isDark ? 'mdi-weather-night' : 'mdi-weather-sunny' }}</v-icon>
             </v-btn>
@@ -17,9 +14,19 @@
             <v-card>
                 <v-card-title class="text-h6">Disclaimer</v-card-title>
                 <v-card-text>
-                    <p class="mb-4">
-                        This calculator is not affiliated with or endorsed by the Guyana Revenue
-                        Authority (GRA). Estimates are for guidance only.
+                    <p class="mb-2 text-body-2">
+                        This calculator provides an estimate for informational purposes only and should not be
+                        considered as financial or legal advice.
+                    </p>
+                    <p class="mb-2 text-body-2">
+                        The figures are based on publicly available information from the Guyana Revenue Authority (GRA)
+                        but we cannot guarantee their accuracy or timeliness. This tool is not affiliated with or
+                        endorsed by the GRA.
+                    </p>
+                    <p class="mb-4 text-body-2">
+                        The developers of this tool are not liable for any errors, omissions, or for any loss or damage
+                        arising from its use. You are solely responsible for verifying the accuracy of the results with
+                        the GRA or a qualified tax professional.
                     </p>
                     <v-checkbox v-model="disclaimerChecked" label="I understand and agree"></v-checkbox>
                 </v-card-text>
@@ -45,6 +52,13 @@
                         </v-alert>
 
                         <v-card class="pa-4" rounded="xl">
+                            <div class="d-flex justify-end mb-2">
+                                <v-btn-toggle v-model="displayCurrency" mandatory color="primary" variant="outlined"
+                                    density="compact">
+                                    <v-btn value="GYD" class="text-none">GYD</v-btn>
+                                    <v-btn value="USD" class="text-none">USD</v-btn>
+                                </v-btn-toggle>
+                            </div>
                             <v-card-text>
                                 <div class="mb-6">
                                     <v-label class="mb-2 font-weight-medium">Propulsion</v-label>
@@ -109,7 +123,7 @@
                                                         <div class="stat-title">CIF Value</div>
                                                         <div class="stat-value" ref="cifRef"
                                                             :title="formatCurrency(results.cifValue)">{{
-                                                            formatCurrency(results.cifValue) }}</div>
+                                                                formatCurrency(results.cifValue) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                                 <v-col cols="12" md="4">
@@ -117,7 +131,7 @@
                                                         <div class="stat-title">Total Tax</div>
                                                         <div class="stat-value" ref="taxRef"
                                                             :title="formatCurrency(results.totalTax)">{{
-                                                            formatCurrency(results.totalTax) }}</div>
+                                                                formatCurrency(results.totalTax) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                                 <v-col cols="12" md="4">
@@ -125,7 +139,7 @@
                                                         <div class="stat-title">Total Cost</div>
                                                         <div class="stat-value" ref="totalRef"
                                                             :title="formatCurrency(results.totalPrice)">{{
-                                                            formatCurrency(results.totalPrice) }}</div>
+                                                                formatCurrency(results.totalPrice) }}</div>
                                                     </v-sheet>
                                                 </v-col>
                                             </v-row>
@@ -134,17 +148,17 @@
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>Customs Duty</v-list-item-title>
                                                     <template v-slot:append><span class="font-weight-medium">{{
-                                                            formatCurrency(results.duty) }}</span></template>
+                                                        formatCurrency(results.duty) }}</span></template>
                                                 </v-list-item>
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>Excise Tax</v-list-item-title>
                                                     <template v-slot:append><span class="font-weight-medium">{{
-                                                            formatCurrency(results.excise) }}</span></template>
+                                                        formatCurrency(results.excise) }}</span></template>
                                                 </v-list-item>
                                                 <v-list-item prepend-icon="mdi-percent-outline">
                                                     <v-list-item-title>VAT (14%)</v-list-item-title>
                                                     <template v-slot:append><span class="font-weight-medium">{{
-                                                            formatCurrency(results.vat) }}</span></template>
+                                                        formatCurrency(results.vat) }}</span></template>
                                                 </v-list-item>
                                                 <v-divider class="my-2"></v-divider>
                                                 <v-list-item prepend-icon="mdi-cog-outline">
@@ -241,16 +255,15 @@
 
                         <footer class="text-center text-caption text-medium-emphasis py-8">
                             <p>
-                                This calculator is not affiliated with or endorsed by the
+                                This calculator is for estimation purposes only and is not affiliated with the
                                 <a href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
                                     class="text-primary">Guyana Revenue
                                     Authority (GRA)</a>.
-                                Always verify information on the official site.
+                                All calculations should be verified with the GRA or a qualified professional.
                             </p>
-                            <p class="mt-2">
-                                Built by <a href="https://wa.me/5927366642" target="_blank" rel="noopener"
-                                    class="text-primary">Ricardo
-                                    Persaud</a>.
+                            <p class="mt-2">For official information, please visit the <a
+                                    href="https://www.gra.gov.gy/imports/motor-vehicle/" target="_blank" rel="noopener"
+                                    class="text-primary">GRA Motor Vehicle Imports Page</a>.
                             </p>
                         </footer>
 
@@ -319,10 +332,6 @@ const estimateInfo = reactive({
     companyLogo: ''
 })
 const displayCurrency = ref('GYD')
-
-function toggleCurrency() {
-    displayCurrency.value = displayCurrency.value === 'GYD' ? 'USD' : 'GYD'
-}
 
 function formatCurrency(val) {
     const currency = displayCurrency.value
@@ -537,14 +546,28 @@ async function generateEstimatePdf(download = false) {
         y -= (lines.length + 1) * 12 + 4
     })
 
-    const disclaimer = 'This estimate is for guidance only. Taxes are computed as customs duty, excise, VAT and a $1,000 processing fee applied to your CIF value.'
+    const disclaimer = 'This calculator provides an estimate for informational purposes only and should not be considered as financial or legal advice. The figures are based on publicly available information from the Guyana Revenue Authority (GRA) but we cannot guarantee their accuracy or timeliness. This tool is not affiliated with or endorsed by the GRA. The developers of this tool are not liable for any errors, omissions, or for any loss or damage arising from its use. You are solely responsible for verifying the accuracy of the results with the GRA or a qualified tax professional.';
     const disclaimerLines = wrapText(disclaimer, width - margin * 2, 10)
-    let disclaimerY = margin + (disclaimerLines.length - 1) * 12
-    disclaimerLines.forEach((line, i) => {
-        drawText(line, width / 2, disclaimerY - i * 12, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) })
-    })
-    const graUrl = 'https://www.gra.gov.gy/imports/motor-vehicle'
-    drawText(graUrl, width / 2, margin - 12, 10, { align: 'center', color: rgb(0, 0, 1) })
+    const graWebsite = 'Official Source: https://www.gra.gov.gy/imports/motor-vehicle/';
+
+    // Calculate Y position for the top of the footer, assuming it's at the bottom of the page.
+    let footerTopY = margin + (disclaimerLines.length - 1) * 12;
+
+    // If the content (y) would overlap with the footer, position footer below content.
+    if (y < footerTopY + 20) { // 20px padding
+        footerTopY = y - 30; // 30px space below content
+    }
+
+    // Draw disclaimer text, from top to bottom.
+    let currentY = footerTopY;
+    disclaimerLines.forEach((line) => {
+        drawText(line, width / 2, currentY, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) });
+        currentY -= 12;
+    });
+
+    // Draw GRA website link below disclaimer.
+    drawText(graWebsite, width / 2, currentY, 10, { align: 'center', color: rgb(0.4, 0.4, 0.4) });
+
     const pdfBytes = await pdfDoc.save()
     const blob = new Blob([pdfBytes], { type: 'application/pdf' })
     const oldUrl = pdfPreviewUrl.value
