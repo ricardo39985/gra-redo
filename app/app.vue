@@ -671,15 +671,20 @@ function resetForm() {
 }
 
 function calculateGasoline() {
-    let dutyRate = 0, exciseRate = 0, vatRate = 0.14;
     let duty = 0, excise = 0, vat = 0, totalTax = 0;
 
     if (vehicle_type.value === 'Bike') {
-        dutyRate = 0.20;
+        let dutyRate = 0.20, exciseRate = 0;
         if (cc.value > 175) {
             exciseRate = 0.10;
         }
+        duty = dutyRate * cif.value;
+        excise = exciseRate * (duty + cif.value);
+        vat = (cif.value + duty + excise) * 0.14;
+        totalTax = duty + excise + vat;
     } else if (ageCategory.value === 'under4') {
+        let dutyRate = 0, exciseRate = 0;
+        let vatRate = 0.14;
         if (cc.value <= 1500) {
             dutyRate = 0.35;
         } else if (cc.value <= 2000) {
@@ -692,27 +697,33 @@ function calculateGasoline() {
             dutyRate = 0.45;
             exciseRate = 1.40;
         }
+        duty = dutyRate * cif.value;
+        excise = exciseRate * (duty + cif.value);
+        vat = (cif.value + duty + excise) * vatRate;
+        totalTax = duty + excise + vat;
     } else { // over4
-        if (cc.value <= 1800) {
-            dutyRate = 0.45;
-            exciseRate = 0.10;
-        } else if (cc.value > 2000 && cc.value <= 2500) {
-            dutyRate = 0.45;
-            exciseRate = 1.10;
-        } else if (cc.value > 2500) {
-            dutyRate = 0.45;
-            exciseRate = 1.10;
+        duty = 0;
+        vat = 0;
+        if (cc.value <= 1000) {
+            excise = 800000 / exchange_rate.value;
+            totalTax = excise;
+        } else if (cc.value <= 1500) {
+            excise = 800000 / exchange_rate.value;
+            totalTax = excise;
+        } else if (cc.value <= 1800) {
+            excise = (cif.value + 6000) * 0.30 + 6000;
+            totalTax = excise;
+        } else if (cc.value <= 2000) {
+            excise = (cif.value + 6500) * 0.30 + 6500;
+            totalTax = excise;
+        } else if (cc.value <= 3000) {
+            excise = (cif.value + 13500) * 0.70 + 13500;
+            totalTax = excise;
         } else {
-            // No tax rates provided for 1801cc to 2000cc
-            dutyRate = 0;
-            exciseRate = 0;
+            excise = (cif.value + 14500) * 1.00 + 14500;
+            totalTax = excise;
         }
     }
-    duty = dutyRate * cif.value;
-    excise = (exciseRate || 0) * (duty + cif.value);
-    vat = (cif.value + duty + excise) * vatRate;
-    totalTax = duty + excise + vat;
-
     return { duty, excise, vat, totalTax };
 }
 
@@ -741,8 +752,7 @@ function calculateDiesel() {
         if (cc.value <= 1500) {
             totalTax = 800000 / exchange_rate.value;
         } else if (cc.value <= 2000) {
-            // The example in the table uses $8,200, not $15,400
-            excise = (cif.value + 8200) * 0.30 + 8200;
+            excise = (cif.value + 15400) * 0.30 + 15400;
             totalTax = excise;
         } else if (cc.value <= 2500) {
             excise = (cif.value + 15400) * 0.70 + 15400;
