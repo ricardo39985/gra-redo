@@ -1,5 +1,5 @@
 <template>
-      <NuxtPage v-if="route.path.startsWith('/admin')" />
+    <NuxtPage v-if="route.path.startsWith('/admin')" />
 
     <v-app v-else
         class="min-h-screen bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 relative overflow-x-hidden">
@@ -507,7 +507,6 @@ import { ref, reactive, computed, watch, nextTick, onMounted, onBeforeUnmount } 
 import { useTheme } from 'vuetify'
 import { formatCurrency as formatCurrencyUtil } from './utils/currency'
 import { calculateGasoline, calculateDiesel } from './utils/tax'
-import { createEstimatePdf } from './utils/pdf'
 import { fitText } from './utils/dom'
 const route = useRoute();
 
@@ -590,6 +589,8 @@ function onLogoChange(e) {
 
 async function generateEstimatePdf(download = false) {
     if (!results.value) return
+    const { createEstimatePdf } = await import('./utils/pdf' /* webpackChunkName: "pdf" */)
+
     const blob = await createEstimatePdf({
         results: results.value,
         estimateInfo,
