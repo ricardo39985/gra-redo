@@ -6,6 +6,8 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css', '@mdi/font/css/materialdesignicons.css'],
   modules: ['vuetify-nuxt-module'],
+  ssr: true,
+
   pages: true,
   nitro: {
     preset: 'netlify',       // <— IMPORTANT: use Netlify Functions (not static / node-server / edge)
