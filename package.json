@@ -17,6 +17,8 @@
     "bcryptjs": "^3.0.2",
     "nanoid": "^5.1.5",
     "nuxt": "^4.1.1",
+    "echarts": "^5.5.1",
+    "vue-echarts": "^7.0.3",
     "pdf-lib": "^1.17.1",
     "tailwindcss": "^4.1.13",
     "vue": "^3.5.20",

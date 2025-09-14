@@ -46,7 +46,13 @@
                     </v-row>
 
                     <v-card class="rounded-2xl p-5 mt-6">
+                        <div class="text-h6 font-bold mb-3">Daily events (30d)</div>
+                        <v-chart :option="dailyOption" autoresize style="height:300px" />
+                    </v-card>
+
+                    <v-card class="rounded-2xl p-5 mt-6">
                         <div class="text-h6 font-bold mb-3">Top vehicle types (90d)</div>
+                        <v-chart :option="vehicleOption" autoresize style="height:300px" class="mb-6" />
                         <v-table density="comfortable">
                             <thead>
                                 <tr>
@@ -66,6 +72,11 @@
                                 </tr>
                             </tbody>
                         </v-table>
+                    </v-card>
+
+                    <v-card class="rounded-2xl p-5 mt-6">
+                        <div class="text-h6 font-bold mb-3">CIF (USD) distribution (30d)</div>
+                        <v-chart :option="cifOption" autoresize style="height:300px" />
                     </v-card>
 
                     <v-card class="rounded-2xl p-5 mt-6">
@@ -107,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 const authed = ref(false);
 const loading = ref(false);
@@ -117,9 +128,32 @@ const password = ref('');
 const overview = ref<any>(null);
 const topVehicles = ref<any[]>([]);
 const recent = ref<any[]>([]);
+const daily = ref<any[]>([]);
+const cifHist = ref<any[]>([]);
 
 function fmtUSD(n: number) { return n == null ? '—' : `$${Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}` }
 function fmtGYD(n: number) { return n == null ? '—' : `GYD ${Number(n).toLocaleString()}` }
+
+const dailyOption = computed(() => ({
+    xAxis: { type: 'category', data: daily.value.map((r: any) => r.date) },
+    yAxis: { type: 'value' },
+    tooltip: { trigger: 'axis' },
+    series: [{ type: 'line', areaStyle: {}, data: daily.value.map((r: any) => r.count) }]
+}));
+
+const vehicleOption = computed(() => ({
+    xAxis: { type: 'category', data: topVehicles.value.map((r: any) => r.vehicle_type) },
+    yAxis: { type: 'value' },
+    tooltip: { trigger: 'axis' },
+    series: [{ type: 'bar', data: topVehicles.value.map((r: any) => r.searches) }]
+}));
+
+const cifOption = computed(() => ({
+    xAxis: { type: 'category', data: cifHist.value.map((b: any) => `$${Math.round(b.min)}-$${Math.round(b.max)}`) },
+    yAxis: { type: 'value' },
+    tooltip: { trigger: 'axis' },
+    series: [{ type: 'bar', data: cifHist.value.map((b: any) => b.count) }]
+}));
 
 async function check() {
     const r = await $fetch<{ ok: boolean }>('/api/admin/me');
@@ -140,14 +174,18 @@ async function logout() {
     authed.value = false;
 }
 async function load() {
-    const [ov, tv, rc] = await Promise.all([
+    const [ov, tv, rc, dl, hist] = await Promise.all([
         $fetch('/api/admin/overview'),
         $fetch('/api/admin/top-vehicles').catch(() => ({ ok: false, rows: [] })),
-        $fetch('/api/admin/recent')
+        $fetch('/api/admin/recent'),
+        $fetch('/api/admin/daily-events').catch(() => ({ rows: [] })),
+        $fetch('/api/admin/cif-histogram').catch(() => ({ buckets: [] }))
     ]);
     overview.value = ov;
     topVehicles.value = (tv as any).rows ?? [];
     recent.value = (rc as any).rows ?? [];
+    daily.value = (dl as any).rows ?? [];
+    cifHist.value = (hist as any).buckets ?? [];
 }
 onMounted(check);
 </script>

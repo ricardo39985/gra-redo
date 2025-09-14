@@ -39,4 +39,7 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
+  build: {
+    transpile: ['vue-echarts'],
+  },
 })
