@@ -25,6 +25,7 @@
     "zod": "^4.1.8"
   },
   "devDependencies": {
+    "netlify-cli": "^23.5.1",
     "vitest": "^3.2.4"
   }
 }

@@ -1,17 +1,16 @@
 [build]
   command = "npm run build"
-  publish = "dist"               
+  publish = "dist"
 
 [functions]
   node_bundler = "esbuild"
   directory = "netlify/functions"
 
-
 [build.environment]
   NODE_VERSION = "20"
 
-# Ensure all routes go through the SSR function
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/server"
-  status = 200
+# Tell Netlify to render all routes with the Nuxt SSR system function
+[[headers]]
+  for = "/*"
+  [headers.values]
+  X-NF-Render-Mode = "ssr"
