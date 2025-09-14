@@ -1,7 +1,6 @@
-# netlify.toml
 [build]
   command = "npm run build"
-  publish = ".output/public"
+  publish = "dist"               
 
 [functions]
   node_bundler = "esbuild"
@@ -9,8 +8,7 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# (safety) If Netlify ever misses Nitro's generated redirect,
-# this ensures all routes go to the SSR function.
+# Ensure all routes go through the SSR function
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/server"
