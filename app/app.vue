@@ -1,5 +1,7 @@
 <template>
-    <v-app
+      <NuxtPage v-if="route.path.startsWith('/admin')" />
+
+    <v-app v-else
         class="min-h-screen bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 relative overflow-x-hidden">
         <!-- Decorative background (clipped; no horizontal overflow on mobile) -->
         <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
@@ -402,8 +404,9 @@
                                     class="text-primary font-medium hover:underline">GRA Motor Vehicle Imports Page</a>.
                             </p>
                             <p class="mt-3">
-                                Contact <a href="https://wa.me/5927366642" target="_blank"
-                                    rel="noopener" class="text-primary font-medium hover:underline">Ricardo Persaud</a> for feedback or inquiries.
+                                Contact <a href="https://wa.me/5927366642" target="_blank" rel="noopener"
+                                    class="text-primary font-medium hover:underline">Ricardo Persaud</a> for feedback or
+                                inquiries.
                             </p>
                         </footer>
                     </v-col>
@@ -506,6 +509,7 @@ import { formatCurrency as formatCurrencyUtil } from './utils/currency'
 import { calculateGasoline, calculateDiesel } from './utils/tax'
 import { createEstimatePdf } from './utils/pdf'
 import { fitText } from './utils/dom'
+const route = useRoute();
 
 // Theme toggling
 const theme = useTheme()
@@ -821,10 +825,37 @@ function calculateTax() {
         }
     };
 
+    /* === BEGIN: log this calculation (no assumptions; your var names used) === */
+    ; (async () => {
+        try {
+            await $fetch('/api/track.calculate', {
+                method: 'POST',
+                body: {
+                    fuel: fuel.value,
+                    vehicle_type: vehicle_type.value,
+                    vehicleYear: vehicleYear.value,
+                    plate: plate.value,
+                    cc: cc.value ?? null,
+                    cif: cif.value,                        // USD input as you capture it
+                    exchange_rate: exchange_rate.value,    // GYD per USD as in your UI
+                    displayCurrency: displayCurrency.value,
+                    results: {
+                        totalTax: results.value.totalTax,      // GYD (includes processingFee)
+                        totalPrice: results.value.totalPrice   // GYD
+                    }
+                }
+            });
+        } catch (_e) {
+            // swallow errors; never block UI
+        }
+    })();
+    /* === END: log this calculation === */
+
     nextTick(() => {
         resultsRef.value?.scrollIntoView({ behavior: 'smooth' });
     });
 }
+
 
 useHead({
     title: 'GRA Motor Vehicle Tax Calculator',
@@ -832,7 +863,7 @@ useHead({
         { name: 'description', content: 'Guyana Revenue Authority (GRA) Motor Vehicle Tax Calculator. Calculate taxes for gasoline, diesel, and electric vehicles based on CIF value, engine capacity, and vehicle year.' },
         { name: 'author', content: 'Ricardo Persaud' },
         { name: 'keywords', content: 'GRA, Motor Vehicle Tax, Calculator, Guyana, duty, excise tax, VAT, CIF value, engine capacity, vehicle year, gasoline, diesel, electric car' },
-        { name: 'theme-color', content: () => isDark.value ? '#6366f1' : '#4338ca' },
+        { name: 'theme-color', content: () => (isDark.value ? '#6366f1' : '#4338ca') },
     ],
     script: [
         {

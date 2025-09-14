@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['~/assets/css/main.css', '@mdi/font/css/materialdesignicons.css'],
   modules: ['vuetify-nuxt-module'],
-
+  pages: true,
   vuetify: {
     vuetifyOptions: {
       theme: {
