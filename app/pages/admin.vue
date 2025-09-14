@@ -46,7 +46,7 @@
                     </v-row>
 
                     <v-card class="rounded-2xl p-5 mt-6">
-                        <div class="text-h6 font-bold mb-3">Daily events (30d)</div>
+                        <div class="text-h6 font-bold mb-3">Daily metrics (30d)</div>
                         <v-chart :option="dailyOption" autoresize style="height:300px" />
                     </v-card>
 
@@ -78,6 +78,21 @@
                         <div class="text-h6 font-bold mb-3">CIF (USD) distribution (30d)</div>
                         <v-chart :option="cifOption" autoresize style="height:300px" />
                     </v-card>
+
+                    <v-row class="mt-6">
+                        <v-col cols="12" md="6">
+                            <v-card class="rounded-2xl p-5 h-full">
+                                <div class="text-h6 font-bold mb-3">Propulsion mix (90d)</div>
+                                <v-chart :option="propulsionOption" autoresize style="height:300px" />
+                            </v-card>
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <v-card class="rounded-2xl p-5 h-full">
+                                <div class="text-h6 font-bold mb-3">Currency mix (90d)</div>
+                                <v-chart :option="currencyOption" autoresize style="height:300px" />
+                            </v-card>
+                        </v-col>
+                    </v-row>
 
                     <v-card class="rounded-2xl p-5 mt-6">
                         <div class="text-h6 font-bold mb-3">Recent events</div>
@@ -130,15 +145,24 @@ const topVehicles = ref<any[]>([]);
 const recent = ref<any[]>([]);
 const daily = ref<any[]>([]);
 const cifHist = ref<any[]>([]);
+const propulsion = ref<any[]>([]);
+const currency = ref<any[]>([]);
 
 function fmtUSD(n: number) { return n == null ? '—' : `$${Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}` }
 function fmtGYD(n: number) { return n == null ? '—' : `GYD ${Number(n).toLocaleString()}` }
 
 const dailyOption = computed(() => ({
-    xAxis: { type: 'category', data: daily.value.map((r: any) => r.date) },
-    yAxis: { type: 'value' },
     tooltip: { trigger: 'axis' },
-    series: [{ type: 'line', areaStyle: {}, data: daily.value.map((r: any) => r.count) }]
+    legend: {},
+    xAxis: { type: 'category', data: daily.value.map((r: any) => r.date) },
+    yAxis: [
+        { type: 'value', name: 'Events' },
+        { type: 'value', name: 'Avg CIF (USD)' }
+    ],
+    series: [
+        { name: 'Events', type: 'bar', data: daily.value.map((r: any) => r.count) },
+        { name: 'Avg CIF (USD)', type: 'line', yAxisIndex: 1, smooth: true, data: daily.value.map((r: any) => r.avg_cif) }
+    ]
 }));
 
 const vehicleOption = computed(() => ({
@@ -153,6 +177,18 @@ const cifOption = computed(() => ({
     yAxis: { type: 'value' },
     tooltip: { trigger: 'axis' },
     series: [{ type: 'bar', data: cifHist.value.map((b: any) => b.count) }]
+}));
+
+const propulsionOption = computed(() => ({
+    tooltip: { trigger: 'item' },
+    legend: { orient: 'vertical', left: 'left' },
+    series: [{ type: 'pie', radius: '70%', data: propulsion.value.map((r: any) => ({ name: r.propulsion, value: r.count })) }]
+}));
+
+const currencyOption = computed(() => ({
+    tooltip: { trigger: 'item' },
+    legend: { orient: 'vertical', left: 'left' },
+    series: [{ type: 'pie', radius: ['40%', '70%'], data: currency.value.map((r: any) => ({ name: r.currency, value: r.count })) }]
 }));
 
 async function check() {
@@ -174,18 +210,22 @@ async function logout() {
     authed.value = false;
 }
 async function load() {
-    const [ov, tv, rc, dl, hist] = await Promise.all([
+    const [ov, tv, rc, dl, hist, prop, curr] = await Promise.all([
         $fetch('/api/admin/overview'),
         $fetch('/api/admin/top-vehicles').catch(() => ({ ok: false, rows: [] })),
         $fetch('/api/admin/recent'),
         $fetch('/api/admin/daily-events').catch(() => ({ rows: [] })),
-        $fetch('/api/admin/cif-histogram').catch(() => ({ buckets: [] }))
+        $fetch('/api/admin/cif-histogram').catch(() => ({ buckets: [] })),
+        $fetch('/api/admin/propulsion-breakdown').catch(() => ({ rows: [] })),
+        $fetch('/api/admin/currency-breakdown').catch(() => ({ rows: [] }))
     ]);
     overview.value = ov;
     topVehicles.value = (tv as any).rows ?? [];
     recent.value = (rc as any).rows ?? [];
     daily.value = (dl as any).rows ?? [];
     cifHist.value = (hist as any).buckets ?? [];
+    propulsion.value = (prop as any).rows ?? [];
+    currency.value = (curr as any).rows ?? [];
 }
 onMounted(check);
 </script>
