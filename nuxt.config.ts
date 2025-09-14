@@ -39,4 +39,12 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
+  build: {
+    transpile: ['vue-echarts'],
+  },
+  runtimeConfig: {
+    public: {
+      clarityId: process.env.CLARITY_ID || '' // keep empty in dev
+    }
+  }
 })
