@@ -7,6 +7,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css', '@mdi/font/css/materialdesignicons.css'],
   modules: ['vuetify-nuxt-module'],
   pages: true,
+  nitro: {
+    preset: 'netlify',       // <— IMPORTANT: use Netlify Functions (not static / node-server / edge)
+  },
   vuetify: {
     vuetifyOptions: {
       theme: {
