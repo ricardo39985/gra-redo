@@ -54,7 +54,7 @@
                                 <div class="flex items-center gap-3">
                                     <v-avatar size="36" class="kpi-icon"><v-icon>mdi-chart-line</v-icon></v-avatar>
                                     <div>
-                                        <div class="text-xs text-slate-500">Total events</div>
+                                        <div class="text-xs text-slate-500">Total searches</div>
                                         <div class="text-3xl font-extrabold mt-1 tabular-nums">
                                             <template v-if="!loadingData">{{ overview?.totals.all ?? '—' }}</template>
                                             <v-skeleton-loader v-else type="text" class="w-24 h-7" />
@@ -68,7 +68,7 @@
                                 <div class="flex items-center gap-3">
                                     <v-avatar size="36" class="kpi-icon"><v-icon>mdi-calendar-clock</v-icon></v-avatar>
                                     <div>
-                                        <div class="text-xs text-slate-500">Last 24h</div>
+                                        <div class="text-xs text-slate-500">Searches last 24h</div>
                                         <div class="text-3xl font-extrabold mt-1 tabular-nums">
                                             <template v-if="!loadingData">{{ overview?.totals.last24h ?? '—'
                                             }}</template>
@@ -83,7 +83,7 @@
                                 <div class="flex items-center gap-3">
                                     <v-avatar size="36" class="kpi-icon"><v-icon>mdi-clock-outline</v-icon></v-avatar>
                                     <div>
-                                        <div class="text-xs text-slate-500">Latest event</div>
+                                        <div class="text-xs text-slate-500">Most recent search</div>
                                         <div class="text-base font-bold mt-1">
                                             <template v-if="!loadingData">
                                                 {{ overview?.latest ? formatDateTime(overview.latest) : '—' }}
@@ -96,9 +96,9 @@
                         </v-col>
                     </v-row>
 
-                    <!-- Daily metrics -->
+                    <!-- Daily searches -->
                     <v-card class="rounded-2xl p-5 mt-6">
-                        <div class="section-title">Daily metrics ({{ rangeDays }}d)</div>
+                        <div class="section-title">Daily searches & avg CIF ({{ rangeDays }}d)</div>
                         <div v-if="loadingData"><v-skeleton-loader type="image" class="h-[300px] rounded-xl" /></div>
                         <v-chart v-else :option="dailyOption" autoresize style="height:300px" />
                     </v-card>
@@ -141,29 +141,17 @@
                         <v-chart v-else :option="cifOption" autoresize style="height:300px" />
                     </v-card>
 
-                    <!-- Mix cards -->
-                    <v-row class="mt-6">
-                        <v-col cols="12" md="6">
-                            <v-card class="rounded-2xl p-5 h-full">
-                                <div class="section-title">Propulsion mix (90d)</div>
-                                <div v-if="loadingData"><v-skeleton-loader type="image" class="h-[300px] rounded-xl" />
-                                </div>
-                                <v-chart v-else :option="propulsionOption" autoresize style="height:300px" />
-                            </v-card>
-                        </v-col>
-                        <v-col cols="12" md="6">
-                            <v-card class="rounded-2xl p-5 h-full">
-                                <div class="section-title">Currency mix (90d)</div>
-                                <div v-if="loadingData"><v-skeleton-loader type="image" class="h-[300px] rounded-xl" />
-                                </div>
-                                <v-chart v-else :option="currencyOption" autoresize style="height:300px" />
-                            </v-card>
-                        </v-col>
-                    </v-row>
-
-                    <!-- Recent events table -->
+                    <!-- Propulsion mix -->
                     <v-card class="rounded-2xl p-5 mt-6">
-                        <div class="section-title">Recent events</div>
+                        <div class="section-title">Propulsion mix (90d)</div>
+                        <div v-if="loadingData"><v-skeleton-loader type="image" class="h-[300px] rounded-xl" />
+                        </div>
+                        <v-chart v-else :option="propulsionOption" autoresize style="height:300px" />
+                    </v-card>
+
+                    <!-- Recent searches table -->
+                    <v-card class="rounded-2xl p-5 mt-6">
+                        <div class="section-title">Recent searches</div>
                         <v-data-table :headers="recentHeaders" :items="recent" density="comfortable"
                             :items-per-page="10" class="rounded-xl">
                             <template #item.created_at="{ item }">
@@ -222,7 +210,6 @@ const recent = ref<any[]>([])
 const daily = ref<any[]>([])
 const cifHist = ref<any[]>([])
 const propulsion = ref<any[]>([])
-const currency = ref<any[]>([])
 
 const snack = ref({ show: false, msg: '' })
 
@@ -268,7 +255,7 @@ const dailyOption = computed(() => {
         displayCurrency.value === 'USD' ? r.avg_cif : r.avg_cif * exchangeRate.value
     )
     return {
-        grid: { left: 48, right: 24, top: 24, bottom: 36 },
+        grid: { left: 48, right: 64, top: 24, bottom: 36, containLabel: true },
         tooltip: {
             trigger: 'axis',
             valueFormatter: (v: any) => typeof v === 'number' ? v.toLocaleString() : v
@@ -276,7 +263,7 @@ const dailyOption = computed(() => {
         legend: {},
         xAxis: { type: 'category', data: daily.value.map((r: any) => r.date) },
         yAxis: [
-            { type: 'value', name: 'Events' },
+            { type: 'value', name: 'Searches' },
             {
                 type: 'value',
                 name: `Avg CIF (${displayCurrency.value})`,
@@ -289,7 +276,7 @@ const dailyOption = computed(() => {
             }
         ],
         series: [
-            { name: 'Events', type: 'bar', data: daily.value.map((r: any) => r.count), barMaxWidth: 24 },
+            { name: 'Searches', type: 'bar', data: daily.value.map((r: any) => r.count), barMaxWidth: 24 },
             { name: `Avg CIF (${displayCurrency.value})`, type: 'line', yAxisIndex: 1, smooth: true, data: avgData }
         ]
     }
@@ -325,12 +312,6 @@ const propulsionOption = computed(() => ({
     series: [{ type: 'pie', radius: '70%', data: propulsion.value.map((r: any) => ({ name: r.propulsion, value: r.count })) }]
 }))
 
-const currencyOption = computed(() => ({
-    tooltip: { trigger: 'item', valueFormatter: (v: any) => v.toLocaleString() },
-    legend: { orient: 'vertical', left: 'left' },
-    series: [{ type: 'pie', radius: ['40%', '70%'], data: currency.value.map((r: any) => ({ name: r.currency, value: r.count })) }]
-}))
-
 // ----- Auth + data -----
 async function check() {
     const r = await $fetch<{ ok: boolean }>('/api/admin/me').catch(() => ({ ok: false }))
@@ -356,14 +337,13 @@ async function load() {
     loadingData.value = true
     try {
         const qs = `?days=${rangeDays.value}`
-        const [ov, tv, rc, dl, hist, prop, curr] = await Promise.all([
+        const [ov, tv, rc, dl, hist, prop] = await Promise.all([
             $fetch('/api/admin/overview'),
             $fetch(`/api/admin/top-vehicles${qs}`).catch(() => ({ rows: [] })),
             $fetch('/api/admin/recent'),
             $fetch(`/api/admin/daily-events${qs}`).catch(() => ({ rows: [] })),
             $fetch(`/api/admin/cif-histogram${qs}`).catch(() => ({ buckets: [] })),
             $fetch(`/api/admin/propulsion-breakdown?days=90`).catch(() => ({ rows: [] })),
-            $fetch(`/api/admin/currency-breakdown?days=90`).catch(() => ({ rows: [] })),
         ])
         overview.value = ov
         topVehicles.value = (tv as any).rows ?? []
@@ -371,7 +351,6 @@ async function load() {
         daily.value = (dl as any).rows ?? []
         cifHist.value = (hist as any).buckets ?? []
         propulsion.value = (prop as any).rows ?? []
-        currency.value = (curr as any).rows ?? []
         exchangeRate.value = (rc as any).rows?.[0]?.exchange_rate ?? exchangeRate.value
     } finally {
         loadingData.value = false
@@ -400,7 +379,7 @@ function exportCSV() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `events_${new Date().toISOString().slice(0, 10)}.csv`
+    a.download = `searches_${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     URL.revokeObjectURL(url)
 }
